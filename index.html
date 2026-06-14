@@ -202,6 +202,25 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
   .home-headline { font-size: 26px; }
   .home-stats { gap: 20px; }
 }
+/* Sort modal */
+.sort-modal-overlay { position: fixed; inset: 0; background: rgba(11,31,53,0.5); z-index: 300; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.sort-modal-overlay.open { opacity: 1; pointer-events: all; }
+.sort-modal { background: #fff; border-radius: 16px; padding: 28px; width: 480px; max-width: calc(100vw - 40px); box-shadow: 0 20px 60px rgba(11,31,53,0.2); }
+.sort-modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.sort-modal-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
+.sort-spinner { display: flex; align-items: center; gap: 12px; padding: 20px 0; font-size: 13px; color: var(--text-secondary); }
+.sort-result-section { margin-bottom: 14px; }
+.sort-result-section h4 { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+.sort-result-section h4.green { color: #059669; }
+.sort-result-section h4.amber { color: #B45309; }
+.sort-result-section h4.red { color: #DC2626; }
+.sort-result-row { font-size: 12px; padding: 6px 10px; border-radius: 6px; margin-bottom: 3px; display: flex; align-items: center; gap: 8px; line-height: 1.4; }
+.sort-result-row.ok { background: #ECFDF5; color: #065F46; }
+.sort-result-row.warn { background: #FFFBEB; color: #92400E; }
+.sort-result-row.err { background: #FEF2F2; color: #991B1B; }
+.sort-dest { font-family: 'DM Mono', monospace; font-size: 11px; opacity: 0.7; margin-left: auto; white-space: nowrap; flex-shrink: 0; }
+.sort-modal-footer { display: flex; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+.sort-empty { text-align: center; padding: 20px 0; font-size: 14px; color: var(--text-secondary); }
 </style>
 </head>
 <body>
@@ -274,6 +293,10 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         Upload files
       </a>
+      <button onclick="openSortModal()" style="display:flex;align-items:center;gap:7px;background:#0B1F35;color:#fff;font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;transition:background 0.15s;white-space:nowrap;font-family:inherit;" onmouseover="this.style.background='#0d2840'" onmouseout="this.style.background='#0B1F35'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
+        Sort files
+      </button>
       <span class="topbar-badge" id="topbar-badge">HOME</span>
       <div class="status-dot"></div>
       <span class="status-text">All folders active</span>
@@ -395,6 +418,20 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
     </div>
 
   </main>
+</div>
+
+<!-- Sort modal -->
+<div class="sort-modal-overlay" id="sort-modal-overlay">
+  <div class="sort-modal">
+    <h3>Sort files from Dump</h3>
+    <div class="sort-modal-sub" id="sort-modal-sub">Classifies files in the _Dump folder and moves them to the correct category and center. Originals are archived and Dump is cleared.</div>
+    <div id="sort-modal-body">
+      <div class="sort-spinner"><div class="spinner"></div>Analysing and sorting files…</div>
+    </div>
+    <div class="sort-modal-footer">
+      <button class="btn-cancel" onclick="closeSortModal()">Close</button>
+    </div>
+  </div>
 </div>
 
 <!-- Move request modal -->
@@ -669,9 +706,77 @@ async function submitMoveRequest() {
   }
 }
 
-// Close move modal on overlay click
-document.getElementById('move-modal-overlay').addEventListener('click', function(e) {
-  if (e.target === this) closeMoveModal();
+// ── Sort modal ──
+async function openSortModal() {
+  document.getElementById('sort-modal-body').innerHTML = '<div class="sort-spinner"><div class="spinner"></div>Analysing and sorting files…</div>';
+  document.getElementById('sort-modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  try {
+    const resp = await fetch('/.netlify/functions/sort-files', { method: 'POST' });
+    const data = await resp.json();
+    renderSortResults(data);
+  } catch(err) {
+    document.getElementById('sort-modal-body').innerHTML = `<div class="sort-result-row err">⚠ Error: ${err.message}</div>`;
+  }
+}
+
+function closeSortModal() {
+  document.getElementById('sort-modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function renderSortResults(data) {
+  if (data.error && !data.sorted?.length && !data.ambiguous?.length) {
+    document.getElementById('sort-modal-body').innerHTML = `<div class="sort-result-row err">⚠ ${data.error}</div>`;
+    return;
+  }
+
+  if (data.message && data.sorted?.length === 0 && data.ambiguous?.length === 0) {
+    document.getElementById('sort-modal-body').innerHTML = `<div class="sort-empty">📂 Dump folder is already empty — nothing to sort.</div>`;
+    return;
+  }
+
+  let html = '';
+
+  if (data.sorted?.length) {
+    html += `<div class="sort-result-section">
+      <h4 class="green">✓ Sorted (${data.sorted.length})</h4>
+      ${data.sorted.map(f => `<div class="sort-result-row ok">
+        <span>${f.name}</span>
+        <span class="sort-dest">${f.destination}</span>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  if (data.ambiguous?.length) {
+    html += `<div class="sort-result-section">
+      <h4 class="amber">⚠ Could not classify (${data.ambiguous.length}) — still in Dump</h4>
+      ${data.ambiguous.map(f => `<div class="sort-result-row warn">
+        <span>${f.name}</span>
+        <span class="sort-dest">needs manual sort</span>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  if (data.errors?.length) {
+    html += `<div class="sort-result-section">
+      <h4 class="red">✗ Errors (${data.errors.length})</h4>
+      ${data.errors.map(f => `<div class="sort-result-row err"><span>${f.name}: ${f.error}</span></div>`).join('')}
+    </div>`;
+  }
+
+  const dumpStatus = data.dumpCleared
+    ? `<div style="margin-top:14px;padding:10px 12px;background:#ECFDF5;border-radius:8px;font-size:12px;font-weight:500;color:#065F46;">✓ Dump folder is now empty and ready for the next batch</div>`
+    : data.remainingInDump > 0
+    ? `<div style="margin-top:14px;padding:10px 12px;background:#FFFBEB;border-radius:8px;font-size:12px;font-weight:500;color:#92400E;">⚠ ${data.remainingInDump} file(s) still in Dump — review manually</div>`
+    : '';
+
+  document.getElementById('sort-modal-body').innerHTML = html + dumpStatus;
+}
+
+document.getElementById('sort-modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeSortModal();
 });
 </script>
 </body>
