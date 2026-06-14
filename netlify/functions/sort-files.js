@@ -47,7 +47,7 @@ function classify(name) {
 
   // Category detection
   const catMap = {
-    safety: ['security','safety','isow','volunteer registration','evacuation','lockdown','shelter','incident','drill','fire plan','positions'],
+    safety: ['security','safety','isow','volunteer registration','evacuation','lockdown','shelter','incident','drill','fire plan','positions','jamatkhana presentation','jamatkhana security','security plan'],
     eop:    ['emergency operating','eop','emergency procedure','response plan','continuity'],
     rec:    ['rec','religious education','curriculum','attendance','class','lesson','program schedule'],
     camps:  ['camp','camping','day camp','overnight','activity','outdoor']
