@@ -159,6 +159,31 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
 .drawer-open-drive { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
 .drawer-open-drive a { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--tab-badge-text); text-decoration: none; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); transition: background 0.15s; }
 .drawer-open-drive a:hover { background: var(--tab-muted); }
+.file-move-btn { margin-left: auto; background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 500; color: var(--text-hint); cursor: pointer; opacity: 0; transition: opacity 0.15s, color 0.15s, border-color 0.15s; white-space: nowrap; flex-shrink: 0; }
+.file-item:hover .file-move-btn { opacity: 1; }
+.file-move-btn:hover { color: #C2410C; border-color: #C2410C; background: #FFF7ED; }
+
+/* Move modal */
+.move-modal-overlay { position: fixed; inset: 0; background: rgba(11,31,53,0.5); z-index: 300; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.move-modal-overlay.open { opacity: 1; pointer-events: all; }
+.move-modal { background: #fff; border-radius: 16px; padding: 28px; width: 440px; max-width: calc(100vw - 40px); box-shadow: 0 20px 60px rgba(11,31,53,0.2); transform: translateY(8px); transition: transform 0.2s; }
+.move-modal-overlay.open .move-modal { transform: translateY(0); }
+.move-modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.move-modal-file { font-size: 12px; color: var(--text-secondary); margin-bottom: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.move-modal label { display: block; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 5px; }
+.move-modal select, .move-modal textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text-primary); outline: none; transition: border-color 0.15s; margin-bottom: 14px; background: #fff; }
+.move-modal select:focus, .move-modal textarea:focus { border-color: var(--tab-accent); }
+.move-modal textarea { resize: none; height: 72px; }
+.move-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+.move-modal-actions button { padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.15s; }
+.btn-cancel { background: none; border: 1px solid var(--border); color: var(--text-secondary); }
+.btn-cancel:hover { background: var(--border); }
+.btn-submit { background: var(--navy); border: none; color: #fff; }
+.btn-submit:hover { background: #0d2840; }
+.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.move-success { text-align: center; padding: 20px 0 8px; }
+.move-success-icon { font-size: 36px; margin-bottom: 10px; }
+.move-success p { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
 
 /* ── Mobile ── */
 .mobile-menu-btn { display: none; background: none; border: none; cursor: pointer; padding: 4px; color: var(--text-primary); }
@@ -368,6 +393,44 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
   </main>
 </div>
 
+<!-- Move request modal -->
+<div class="move-modal-overlay" id="move-modal-overlay">
+  <div class="move-modal" id="move-modal">
+    <div id="move-modal-form-state">
+      <h3>Request file move</h3>
+      <div class="move-modal-file" id="move-modal-filename"></div>
+      <label>Move to category</label>
+      <select id="move-cat-select" onchange="updateCenterOptions()">
+        <option value="">Select category…</option>
+        <option value="eop">EOP — Emergency Operating Procedures</option>
+        <option value="safety">Safety</option>
+        <option value="rec">REC — Religious Education</option>
+        <option value="camps">Camps</option>
+      </select>
+      <label>Move to center</label>
+      <select id="move-center-select" disabled>
+        <option value="">Select center…</option>
+      </select>
+      <label>Reason <span style="font-weight:400;color:var(--text-hint)">(optional)</span></label>
+      <textarea id="move-reason" placeholder="Why does this file need to be moved?"></textarea>
+      <div class="move-modal-actions">
+        <button class="btn-cancel" onclick="closeMoveModal()">Cancel</button>
+        <button class="btn-submit" id="move-submit-btn" onclick="submitMoveRequest()" disabled>Submit request</button>
+      </div>
+    </div>
+    <div id="move-modal-success-state" style="display:none">
+      <div class="move-success">
+        <div class="move-success-icon">✅</div>
+        <h3 style="margin-bottom:8px">Request submitted</h3>
+        <p>The regional coordinator has been notified and will review this request shortly.</p>
+        <div class="move-modal-actions" style="justify-content:center;margin-top:20px">
+          <button class="btn-cancel" onclick="closeMoveModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 const TABS = {
   home:   { bg:'#F5F3EF', accent:'#01DC82', muted:'rgba(1,220,130,0.10)', badgeText:'#0B5E38', initial:'#EDF4F0', stripe:'#01DC82', title:'Welcome', meta:'IV Florida Regional Document Hub', badge:'HOME' },
@@ -478,12 +541,15 @@ async function loadFolder(folderId) {
           <svg class="file-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
         </div>`;
       }
-      return `<a class="file-item" href="${f.viewLink}" target="_blank" rel="noopener">
-        <div class="file-icon ${f.type}">${icon}</div>
-        <div class="file-name">${f.name}</div>
-        <div class="file-meta">${modified}</div>
-        <svg class="file-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      </a>`;
+      const safeName = f.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      return `<div class="file-item">
+        <a href="${f.viewLink}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;flex:1;text-decoration:none;color:inherit;min-width:0;overflow:hidden;">
+          <div class="file-icon ${f.type}" style="flex-shrink:0">${icon}</div>
+          <div class="file-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.name}</div>
+          <div class="file-meta" style="flex-shrink:0">${modified}</div>
+        </a>
+        <button class="file-move-btn" onclick="openMoveModal('${f.id}','${safeName}','${folderId}')">Move</button>
+      </div>`;
     }).join('');
 
     body.innerHTML = `<div class="file-list">${listHTML}</div><div class="drawer-open-drive"><a href="${driveLink}" target="_blank" rel="noopener">Open folder in Google Drive <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>`;
@@ -516,6 +582,93 @@ function closeSidebar() {
   document.getElementById('sidebar').classList.remove('open');
   document.getElementById('overlay-mob').classList.remove('show');
 }
+
+// ── Move request ──
+const FOLDER_MAP = {
+  eop:    { Miami:'1jVrTx0C9iEmNrNKBR9jBRIfRhlh1DyAD', FtLauderdale:'1gpcSGPhQYSw2IqJJuJxIM6L5i7OaTJ45', Orlando:'1MG8GQlyr1GtW0qY2naY7TRruGMGsU2cW', Tampa:'1D_7igH1-S-p0bATOhG0b3ii51tZg2HRR', Ocala:'1vfoo5356GfC68lDdeiVffT9NNaKJ4Rry' },
+  safety: { Miami:'1ieKjGv4Fv7YrQb-8JZ9KKzMq0lh4_qIo', FtLauderdale:'1X-lsQxaFEH2aUE68RJBR1pQvBk2MXYYQ', Orlando:'1XI0LnP0U0yEk9NzD7OL3O9Sp67j4EgCa', Tampa:'1NzXaNqpBs1N1BSytd4zv1hOARG9RImHf', Ocala:'11Dc0bJC6A3nF2QWYg-wg5j2DMnMk8KrI' },
+  rec:    { Miami:'10YqSvPui8lxfE31E4TpViKOqvliwmJ8G', FtLauderdale:'1c89iBn9Vse3h3HxgT9nuD6i3MonNfJ3v', Orlando:'1Z0DYQkYsPXUYOS--o-BAiAcFN2qgT2cA', Tampa:'1h6ra4O_LpF5bWgI6Xbo7M0S9MVk97yvB', Ocala:'1ASR89ZA-mEfm1ayYRtqWV4Z1SeQTYyAh' },
+  camps:  { Miami:'17xUbiAyEXkH00P7Lf1O9bU4Fjsk3deGF', FtLauderdale:'1qKYp_IeAarga1SiZou1Rg16PofdEi4Cf', Orlando:'13epUEqPvVp0bmi98rX3znJMhLtAM8dVM', Tampa:'1fKo-XKZGpcIUbSI2XkOj5CIlPKxCEKkY', Ocala:'12QeCkZtXbBzdSOTjBWoeyerVSF9tWDa8' }
+};
+const CENTER_LABELS = { Miami:'Miami', FtLauderdale:'Ft. Lauderdale', Orlando:'Orlando', Tampa:'Tampa', Ocala:'Ocala' };
+
+let _moveFileId = '', _moveFileName = '', _moveCurrentFolder = '';
+
+function openMoveModal(fileId, fileName, currentFolder) {
+  _moveFileId = fileId; _moveFileName = fileName; _moveCurrentFolder = currentFolder;
+  document.getElementById('move-modal-filename').textContent = fileName;
+  document.getElementById('move-cat-select').value = '';
+  document.getElementById('move-center-select').value = '';
+  document.getElementById('move-center-select').disabled = true;
+  document.getElementById('move-reason').value = '';
+  document.getElementById('move-submit-btn').disabled = true;
+  document.getElementById('move-modal-form-state').style.display = '';
+  document.getElementById('move-modal-success-state').style.display = 'none';
+  document.getElementById('move-modal-overlay').classList.add('open');
+}
+
+function closeMoveModal() {
+  document.getElementById('move-modal-overlay').classList.remove('open');
+}
+
+function updateCenterOptions() {
+  const cat = document.getElementById('move-cat-select').value;
+  const sel = document.getElementById('move-center-select');
+  sel.innerHTML = '<option value="">Select center…</option>';
+  if (cat && FOLDER_MAP[cat]) {
+    Object.entries(CENTER_LABELS).forEach(([key, label]) => {
+      const opt = document.createElement('option');
+      opt.value = key; opt.textContent = label;
+      sel.appendChild(opt);
+    });
+    sel.disabled = false;
+  } else {
+    sel.disabled = true;
+  }
+  sel.onchange = () => {
+    document.getElementById('move-submit-btn').disabled = !(document.getElementById('move-cat-select').value && sel.value);
+  };
+  document.getElementById('move-submit-btn').disabled = true;
+}
+
+async function submitMoveRequest() {
+  const cat = document.getElementById('move-cat-select').value;
+  const center = document.getElementById('move-center-select').value;
+  const reason = document.getElementById('move-reason').value;
+  const targetFolderId = FOLDER_MAP[cat]?.[center];
+  if (!targetFolderId) return;
+
+  const btn = document.getElementById('move-submit-btn');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+
+  try {
+    const resp = await fetch('/.netlify/functions/request-move', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fileId: _moveFileId, fileName: _moveFileName,
+        currentFolder: _moveCurrentFolder,
+        targetCategory: cat, targetCenter: CENTER_LABELS[center],
+        targetFolderId, reason
+      })
+    });
+    const data = await resp.json();
+    if (data.success) {
+      document.getElementById('move-modal-form-state').style.display = 'none';
+      document.getElementById('move-modal-success-state').style.display = '';
+    } else {
+      throw new Error(data.error || 'Unknown error');
+    }
+  } catch(err) {
+    btn.disabled = false; btn.textContent = 'Submit request';
+    alert('Could not submit request: ' + err.message);
+  }
+}
+
+// Close move modal on overlay click
+document.getElementById('move-modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeMoveModal();
+});
 </script>
 </body>
 </html>
