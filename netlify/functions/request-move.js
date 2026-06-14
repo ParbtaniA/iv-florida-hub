@@ -1,7 +1,7 @@
 const { createSign } = require('crypto');
 
 // Netlify Blobs via REST API — no package import needed
-const SITE_ID = process.env.SITE_ID || process.env.NETLIFY_SITE_ID;
+const SITE_ID = process.env.NETLIFY_SITE_ID;
 const BLOBS_TOKEN = process.env.NETLIFY_BLOBS_TOKEN || process.env.TOKEN;
 
 async function blobSet(key, value) {
