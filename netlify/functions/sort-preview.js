@@ -29,6 +29,17 @@ const FOLDER_IDS = {
 
 function classify(name) {
   const n = name.toLowerCase();
+
+  // Exact-match overrides for known files with no center keyword
+  const knownFiles = {
+    'safety team positions': { category: 'safety', center: 'Miami' },
+  };
+  for (const [pattern, dest] of Object.entries(knownFiles)) {
+    if (n.includes(pattern)) {
+      const folderId = FOLDER_IDS[dest.category]?.[dest.center];
+      if (folderId) return { ...dest, folderId };
+    }
+  }
   const centerMap = {
     Miami:        ['miami','mia','hq','headquarters','miramar'],
     FtLauderdale: ['lauderdale','ftl','ft.l','coral springs','broward'],
