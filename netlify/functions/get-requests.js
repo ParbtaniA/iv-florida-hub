@@ -1,0 +1,41 @@
+const { getStore } = require('@netlify/blobs');
+const { createHmac } = require('crypto');
+
+function verifyToken(cookie) {
+  if (!cookie) return null;
+  const match = cookie.match(/iv_admin=([^;]+)/);
+  if (!match) return null;
+  const token = match[1];
+  const [payload, sig] = token.split('.');
+  const expected = createHmac('sha256', process.env.JWT_SECRET).update(payload).digest('base64url');
+  if (sig !== expected) return null;
+  const data = JSON.parse(Buffer.from(payload, 'base64url').toString());
+  if (Date.now() > data.exp) return null;
+  return data;
+}
+
+exports.handler = async (event) => {
+  const headers = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
+
+  const user = verifyToken(event.headers.cookie || '');
+  if (!user || user.email !== process.env.ADMIN_EMAIL) {
+    return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
+  }
+
+  try {
+    const store = getStore({ name: 'move-requests', consistency: 'strong' });
+    const { blobs } = await store.list();
+    const requests = await Promise.all(
+      blobs.map(async ({ key }) => {
+        const data = await store.get(key, { type: 'json' });
+        return data;
+      })
+    );
+    const pending = requests.filter(r => r && r.status === 'pending')
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return { statusCode: 200, headers, body: JSON.stringify({ requests: pending }) };
+  } catch (err) {
+    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+  }
+};
