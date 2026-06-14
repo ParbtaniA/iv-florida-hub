@@ -1,6 +1,6 @@
 const { createHmac } = require('crypto');
 
-const SITE_ID = process.env.SITE_ID || process.env.NETLIFY_SITE_ID;
+const SITE_ID = process.env.NETLIFY_SITE_ID;
 const BLOBS_TOKEN = process.env.NETLIFY_BLOBS_TOKEN || process.env.TOKEN;
 
 function verifyToken(cookie) {
