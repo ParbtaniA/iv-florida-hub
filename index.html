@@ -424,12 +424,12 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
 <div class="sort-modal-overlay" id="sort-modal-overlay">
   <div class="sort-modal">
     <h3>Sort files from Dump</h3>
-    <div class="sort-modal-sub" id="sort-modal-sub">Classifies files in the _Dump folder and moves them to the correct category and center. Originals are archived and Dump is cleared.</div>
+    <div class="sort-modal-sub">Reviews files in the _Dump folder, classifies them, then moves to the correct category and center. Originals are archived and Dump is cleared.</div>
     <div id="sort-modal-body">
-      <div class="sort-spinner"><div class="spinner"></div>Analysing and sorting files…</div>
+      <div class="sort-spinner"><div class="spinner"></div>Reading Dump folder…</div>
     </div>
-    <div class="sort-modal-footer">
-      <button class="btn-cancel" onclick="closeSortModal()">Close</button>
+    <div class="sort-modal-footer" id="sort-modal-footer">
+      <button class="btn-cancel" onclick="closeSortModal()">Cancel</button>
     </div>
   </div>
 </div>
@@ -707,55 +707,107 @@ async function submitMoveRequest() {
 }
 
 // ── Sort modal ──
+let _sortPlan = [], _sortAmbiguous = [];
+
 async function openSortModal() {
-  document.getElementById('sort-modal-body').innerHTML = '<div class="sort-spinner"><div class="spinner"></div>Analysing and sorting files…</div>';
+  document.getElementById('sort-modal-body').innerHTML = '<div class="sort-spinner"><div class="spinner"></div>Reading Dump folder…</div>';
+  document.getElementById('sort-modal-footer').innerHTML = '<button class="btn-cancel" onclick="closeSortModal()">Cancel</button>';
   document.getElementById('sort-modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 
   try {
-    const resp = await fetch('/.netlify/functions/sort-files', { method: 'POST' });
+    const resp = await fetch('/.netlify/functions/sort-preview', { method: 'POST' });
     const data = await resp.json();
-    renderSortResults(data);
+    if (data.error) throw new Error(data.error);
+    _sortPlan = data.plan || [];
+    _sortAmbiguous = data.ambiguous || [];
+    renderSortPlan(data);
   } catch(err) {
-    document.getElementById('sort-modal-body').innerHTML = `<div class="sort-result-row err">⚠ Error: ${err.message}</div>`;
+    document.getElementById('sort-modal-body').innerHTML = `<div class="sort-result-row err">⚠ ${err.message}</div>`;
+    document.getElementById('sort-modal-footer').innerHTML = '<button class="btn-cancel" onclick="closeSortModal()">Close</button>';
   }
 }
 
 function closeSortModal() {
   document.getElementById('sort-modal-overlay').classList.remove('open');
   document.body.style.overflow = '';
+  _sortPlan = []; _sortAmbiguous = [];
 }
 
-function renderSortResults(data) {
-  if (data.error && !data.sorted?.length && !data.ambiguous?.length) {
-    document.getElementById('sort-modal-body').innerHTML = `<div class="sort-result-row err">⚠ ${data.error}</div>`;
-    return;
-  }
-
-  if (data.message && data.sorted?.length === 0 && data.ambiguous?.length === 0) {
-    document.getElementById('sort-modal-body').innerHTML = `<div class="sort-empty">📂 Dump folder is already empty — nothing to sort.</div>`;
+function renderSortPlan(data) {
+  if (data.empty) {
+    document.getElementById('sort-modal-body').innerHTML = '<div class="sort-empty">📂 Dump folder is empty — nothing to sort.</div>';
+    document.getElementById('sort-modal-footer').innerHTML = '<button class="btn-cancel" onclick="closeSortModal()">Close</button>';
     return;
   }
 
   let html = '';
 
-  if (data.sorted?.length) {
+  if (_sortPlan.length) {
     html += `<div class="sort-result-section">
-      <h4 class="green">✓ Sorted (${data.sorted.length})</h4>
-      ${data.sorted.map(f => `<div class="sort-result-row ok">
-        <span>${f.name}</span>
-        <span class="sort-dest">${f.destination}</span>
+      <h4 class="green">Ready to sort (${_sortPlan.length})</h4>
+      ${_sortPlan.map(f => `<div class="sort-result-row ok">
+        <span>${f.name}</span><span class="sort-dest">${f.category}/${f.center}</span>
       </div>`).join('')}
     </div>`;
   }
 
-  if (data.ambiguous?.length) {
+  if (_sortAmbiguous.length) {
     html += `<div class="sort-result-section">
-      <h4 class="amber">⚠ Could not classify (${data.ambiguous.length}) — still in Dump</h4>
-      ${data.ambiguous.map(f => `<div class="sort-result-row warn">
-        <span>${f.name}</span>
-        <span class="sort-dest">needs manual sort</span>
-      </div>`).join('')}
+      <h4 class="amber">⚠ Could not classify (${_sortAmbiguous.length}) — will stay in Dump</h4>
+      ${_sortAmbiguous.map(f => `<div class="sort-result-row warn"><span>${f.name}</span><span class="sort-dest">needs manual sort</span></div>`).join('')}
+    </div>`;
+  }
+
+  document.getElementById('sort-modal-body').innerHTML = html;
+
+  // Footer: confirm button (only if logged in as admin)
+  const footer = document.getElementById('sort-modal-footer');
+  if (_sortPlan.length > 0) {
+    footer.innerHTML = `
+      <button class="btn-cancel" onclick="closeSortModal()" style="margin-right:auto">Cancel</button>
+      <button class="btn-submit" onclick="executeSortPlan()">✓ Confirm &amp; sort ${_sortPlan.length} file${_sortPlan.length !== 1 ? 's' : ''}</button>`;
+  } else {
+    footer.innerHTML = '<button class="btn-cancel" onclick="closeSortModal()">Close</button>';
+  }
+}
+
+async function executeSortPlan() {
+  document.getElementById('sort-modal-body').innerHTML = '<div class="sort-spinner"><div class="spinner"></div>Sorting files — copying, archiving, clearing Dump…</div>';
+  document.getElementById('sort-modal-footer').innerHTML = '';
+
+  try {
+    const resp = await fetch('/.netlify/functions/sort-execute', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: _sortPlan })
+    });
+
+    if (resp.status === 401) {
+      document.getElementById('sort-modal-body').innerHTML = `
+        <div class="sort-result-row warn" style="margin-bottom:12px">Admin login required to execute sorts.</div>
+        <a href="/admin" target="_blank" style="display:inline-block;background:#0B1F35;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none;">Open Admin Panel ↗</a>
+        <p style="font-size:12px;color:var(--text-hint);margin-top:10px">Log in at /admin, then come back and try again.</p>`;
+      document.getElementById('sort-modal-footer').innerHTML = '<button class="btn-cancel" onclick="closeSortModal()">Close</button>';
+      return;
+    }
+
+    const data = await resp.json();
+    renderSortResults(data);
+  } catch(err) {
+    document.getElementById('sort-modal-body').innerHTML = `<div class="sort-result-row err">⚠ ${err.message}</div>`;
+    document.getElementById('sort-modal-footer').innerHTML = '<button class="btn-cancel" onclick="closeSortModal()">Close</button>';
+  }
+}
+
+function renderSortResults(data) {
+  let html = '';
+
+  if (data.sorted?.length) {
+    html += `<div class="sort-result-section">
+      <h4 class="green">✓ Sorted (${data.sorted.length})</h4>
+      ${data.sorted.map(f => `<div class="sort-result-row ok"><span>${f.name}</span><span class="sort-dest">${f.destination}</span></div>`).join('')}
     </div>`;
   }
 
@@ -766,13 +818,12 @@ function renderSortResults(data) {
     </div>`;
   }
 
-  const dumpStatus = data.dumpCleared
-    ? `<div style="margin-top:14px;padding:10px 12px;background:#ECFDF5;border-radius:8px;font-size:12px;font-weight:500;color:#065F46;">✓ Dump folder is now empty and ready for the next batch</div>`
-    : data.remainingInDump > 0
-    ? `<div style="margin-top:14px;padding:10px 12px;background:#FFFBEB;border-radius:8px;font-size:12px;font-weight:500;color:#92400E;">⚠ ${data.remainingInDump} file(s) still in Dump — review manually</div>`
-    : '';
+  if (data.dumpCleared) {
+    html += `<div style="margin-top:12px;padding:10px 12px;background:#ECFDF5;border-radius:8px;font-size:12px;font-weight:500;color:#065F46;">✓ Dump folder cleared — ready for next batch</div>`;
+  }
 
-  document.getElementById('sort-modal-body').innerHTML = html + dumpStatus;
+  document.getElementById('sort-modal-body').innerHTML = html || '<div class="sort-empty">Nothing was sorted.</div>';
+  document.getElementById('sort-modal-footer').innerHTML = '<button class="btn-cancel" onclick="closeSortModal()">Done</button>';
 }
 
 document.getElementById('sort-modal-overlay').addEventListener('click', function(e) {
