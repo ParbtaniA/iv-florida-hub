@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IV Florida — Document Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #0B1F35; --green: #01DC82; --green-dim: #00b86c;
+  --card: #FFFFFF; --border: #E8E5DF; --border-dark: #D0CCC4;
+  --text-primary: #0B1F35; --text-secondary: #64748B; --text-hint: #A0AEC0;
+  --sidebar-w: 260px;
+  --tab-bg: #F5F3EF; --tab-accent: #01DC82; --tab-muted: rgba(1,220,130,0.10);
+  --tab-badge-text: #0B5E38; --tab-initial: #EDF4F0; --tab-stripe: #01DC82;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-height: 100vh; display: flex; background: var(--tab-bg); transition: background 0.4s ease; }
+
+/* ── Sidebar ── */
+.sidebar { width: var(--sidebar-w); background: var(--navy); min-height: 100vh; position: fixed; top: 0; left: 0; display: flex; flex-direction: column; z-index: 100; }
+.sidebar-brand { padding: 28px 24px 22px; border-bottom: 1px solid rgba(255,255,255,0.07); cursor: pointer; }
+.brand-eyebrow { font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); margin-bottom: 6px; }
+.brand-name { font-size: 16px; font-weight: 600; color: #fff; line-height: 1.3; }
+.brand-sub { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 3px; }
+.sidebar-search { padding: 14px 16px 8px; }
+.sidebar-search input { width: 100%; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 12px 8px 34px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: #fff; outline: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.35)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: 10px center; transition: border-color 0.15s; }
+.sidebar-search input::placeholder { color: rgba(255,255,255,0.3); }
+.sidebar-search input:focus { border-color: var(--green); outline: none; }
+.sidebar-nav { padding: 8px 0; flex: 1; }
+.nav-label { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.3); padding: 16px 24px 6px; }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 24px; cursor: pointer; transition: background 0.15s, padding-left 0.2s; border-left: 3px solid transparent; text-decoration: none; position: relative; }
+.nav-item:hover { background: rgba(255,255,255,0.06); padding-left: 28px; }
+.nav-item.active { background: rgba(255,255,255,0.08); border-left-color: var(--tab-accent); padding-left: 30px; }
+.nav-item.active::after { content: ''; position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 4px; height: 28px; background: var(--tab-accent); border-radius: 4px 0 0 4px; opacity: 0.6; }
+.nav-code { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; padding: 3px 7px; border-radius: 4px; min-width: 44px; text-align: center; letter-spacing: 0.05em; transition: background 0.2s; }
+.nav-item[data-tab="home"] .nav-code { color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.08); }
+.nav-item[data-tab="eop"] .nav-code { color: #F59E0B; background: rgba(245,158,11,0.15); }
+.nav-item[data-tab="safety"] .nav-code { color: #F87171; background: rgba(248,113,113,0.15); }
+.nav-item[data-tab="rec"] .nav-code { color: #34D399; background: rgba(52,211,153,0.15); }
+.nav-item[data-tab="camps"] .nav-code { color: #818CF8; background: rgba(129,140,248,0.15); }
+.nav-item.active[data-tab="eop"] .nav-code { background: rgba(245,158,11,0.25); }
+.nav-item.active[data-tab="safety"] .nav-code { background: rgba(248,113,113,0.25); }
+.nav-item.active[data-tab="rec"] .nav-code { background: rgba(52,211,153,0.25); }
+.nav-item.active[data-tab="camps"] .nav-code { background: rgba(129,140,248,0.25); }
+.nav-title { font-size: 13px; font-weight: 400; color: rgba(255,255,255,0.6); line-height: 1.3; transition: color 0.15s; }
+.nav-item.active .nav-title { color: #fff; font-weight: 500; }
+.nav-count { margin-left: auto; font-size: 11px; color: rgba(255,255,255,0.22); font-family: 'DM Mono', monospace; }
+.nav-item.active .nav-count { color: rgba(255,255,255,0.45); }
+.sidebar-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.07); font-size: 11px; color: rgba(255,255,255,0.25); line-height: 1.6; }
+.sidebar-footer a { color: var(--green); text-decoration: none; opacity: 0.8; }
+
+/* ── Main ── */
+.main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+.topbar { background: rgba(255,255,255,0.88); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 40px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.topbar-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+.topbar-meta { font-size: 12px; color: var(--text-hint); margin-top: 1px; }
+.topbar-badge { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; padding: 4px 12px; border-radius: 99px; background: var(--tab-muted); color: var(--tab-badge-text); transition: background 0.4s, color 0.4s; letter-spacing: 0.04em; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+.status-text { font-size: 12px; color: var(--text-secondary); }
+.content { padding: 40px; flex: 1; }
+
+/* ── HOME PAGE ── */
+#page-home { display: block; }
+.home-hero { background: var(--navy); border-radius: 20px; padding: 52px 48px; margin-bottom: 32px; position: relative; overflow: hidden; }
+.home-hero::before { content: ''; position: absolute; top: -60px; right: -60px; width: 300px; height: 300px; border-radius: 50%; background: rgba(1,220,130,0.06); pointer-events: none; }
+.home-hero::after { content: ''; position: absolute; bottom: -40px; left: 40%; width: 200px; height: 200px; border-radius: 50%; background: rgba(1,220,130,0.04); pointer-events: none; }
+.home-eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); margin-bottom: 14px; }
+.home-headline { font-size: 36px; font-weight: 600; color: #fff; line-height: 1.15; margin-bottom: 16px; max-width: 560px; }
+.home-headline span { color: var(--green); }
+.home-desc { font-size: 15px; color: rgba(255,255,255,0.55); line-height: 1.7; max-width: 520px; margin-bottom: 32px; }
+.home-stats { display: flex; gap: 32px; }
+.home-stat-value { font-size: 28px; font-weight: 600; color: #fff; line-height: 1; }
+.home-stat-label { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
+.home-cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 32px; }
+.home-cat-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 22px 20px; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s; position: relative; overflow: hidden; }
+.home-cat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--cat-color); }
+.home-cat-card:hover { border-color: var(--border-dark); box-shadow: 0 4px 20px rgba(11,31,53,0.09); transform: translateY(-2px); }
+.home-cat-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--cat-muted); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+.home-cat-icon svg { width: 20px; height: 20px; }
+.home-cat-code { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.08em; color: var(--cat-text); margin-bottom: 4px; }
+.home-cat-name { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.home-cat-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px; }
+.home-cat-action { font-size: 12px; font-weight: 500; color: var(--cat-text); display: flex; align-items: center; gap: 4px; }
+
+.home-info { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 32px; }
+.home-info h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+.home-info p { font-size: 13px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 10px; }
+.home-info p:last-child { margin-bottom: 0; }
+
+/* ── CATEGORY PAGES ── */
+.category-page { display: none; }
+.category-page.active { display: block; }
+.cat-hero { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px 32px; margin-bottom: 24px; display: flex; align-items: center; gap: 20px; position: relative; overflow: hidden; }
+.cat-hero::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--tab-stripe); transition: background 0.4s; }
+.cat-hero-icon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: var(--tab-muted); }
+.cat-hero-icon svg { width: 24px; height: 24px; }
+.cat-hero-code { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; margin-bottom: 4px; color: var(--tab-badge-text); }
+.cat-hero-name { font-size: 20px; font-weight: 600; line-height: 1.2; }
+.cat-hero-desc { font-size: 13px; color: var(--text-secondary); margin-top: 3px; }
+.cat-hero-pill { margin-left: auto; font-size: 11px; font-weight: 500; padding: 5px 12px; border-radius: 99px; background: var(--tab-muted); color: var(--tab-badge-text); white-space: nowrap; }
+
+/* ── Center Grid ── */
+.center-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 14px; }
+.center-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 22px 18px 18px; cursor: pointer; display: flex; flex-direction: column; position: relative; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s; }
+.center-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--tab-stripe); transform: scaleX(0); transform-origin: left; transition: transform 0.25s ease; }
+.center-card:hover { border-color: var(--border-dark); box-shadow: 0 6px 24px rgba(11,31,53,0.10); transform: translateY(-3px); }
+.center-card:hover::after { transform: scaleX(1); }
+.center-card:active { transform: translateY(0); }
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+.card-initial { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: 0.05em; background: var(--tab-initial); color: var(--tab-badge-text); border: 1px solid var(--border); }
+.card-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--tab-stripe); margin-top: 4px; opacity: 0.6; }
+.card-name { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+.card-label { font-size: 11px; color: var(--text-hint); margin-bottom: 18px; }
+.card-action { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; color: var(--tab-badge-text); margin-top: auto; }
+.card-action svg { width: 13px; height: 13px; transition: transform 0.15s; }
+.center-card:hover .card-action svg { transform: translate(1px, -1px); }
+
+/* ── DRAWER ── */
+.drawer-overlay { position: fixed; inset: 0; background: rgba(11,31,53,0.35); z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+.drawer-overlay.open { opacity: 1; pointer-events: all; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 480px; background: var(--card); z-index: 201; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; box-shadow: -8px 0 40px rgba(11,31,53,0.15); }
+.drawer.open { transform: translateX(0); }
+.drawer-header { padding: 24px 28px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; flex-shrink: 0; }
+.drawer-title { font-size: 17px; font-weight: 600; line-height: 1.3; }
+.drawer-subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
+.drawer-close { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--text-secondary); transition: background 0.15s; }
+.drawer-close:hover { background: var(--border); }
+.drawer-breadcrumb { padding: 12px 28px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-hint); flex-shrink: 0; min-height: 44px; }
+.breadcrumb-item { cursor: pointer; color: var(--tab-badge-text); font-weight: 500; }
+.breadcrumb-item:hover { text-decoration: underline; }
+.breadcrumb-sep { color: var(--text-hint); }
+.drawer-body { flex: 1; overflow-y: auto; padding: 16px 28px 28px; }
+.drawer-loading { display: flex; align-items: center; justify-content: center; padding: 60px 20px; flex-direction: column; gap: 12px; }
+.spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--tab-stripe); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.drawer-empty { text-align: center; padding: 60px 20px; color: var(--text-hint); font-size: 14px; }
+.drawer-empty svg { margin: 0 auto 12px; display: block; opacity: 0.3; }
+.file-list { display: flex; flex-direction: column; gap: 4px; }
+.file-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: background 0.15s; text-decoration: none; color: inherit; }
+.file-item:hover { background: var(--tab-muted); }
+.file-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.file-icon.folder { background: #FEF9EC; }
+.file-icon.doc { background: #EBF5FB; }
+.file-icon.sheet { background: #EAFAF1; }
+.file-icon.slides { background: #FEF5E7; }
+.file-icon.pdf { background: #FDEDEC; }
+.file-icon.image { background: #F4ECF7; }
+.file-icon.video { background: #EBF5FB; }
+.file-icon.file { background: var(--border); }
+.file-name { font-size: 13px; font-weight: 500; flex: 1; line-height: 1.3; }
+.file-meta { font-size: 11px; color: var(--text-hint); white-space: nowrap; }
+.file-arrow { color: var(--text-hint); opacity: 0; transition: opacity 0.15s; }
+.file-item:hover .file-arrow { opacity: 1; }
+.drawer-open-drive { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+.drawer-open-drive a { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--tab-badge-text); text-decoration: none; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); transition: background 0.15s; }
+.drawer-open-drive a:hover { background: var(--tab-muted); }
+
+/* ── Mobile ── */
+.mobile-menu-btn { display: none; background: none; border: none; cursor: pointer; padding: 4px; color: var(--text-primary); }
+.overlay-mob { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 90; }
+.overlay-mob.show { display: block; }
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .content { padding: 20px 16px; }
+  .topbar { padding: 0 16px; }
+  .mobile-menu-btn { display: flex; }
+  .center-grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 10px; }
+  .drawer { width: 100%; }
+  .home-hero { padding: 32px 24px; }
+  .home-headline { font-size: 26px; }
+  .home-stats { gap: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="overlay-mob" id="overlay-mob" onclick="closeSidebar()"></div>
+
+<!-- Drawer -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <div>
+      <div class="drawer-title" id="drawer-title">Center Documents</div>
+      <div class="drawer-subtitle" id="drawer-subtitle">Loading...</div>
+    </div>
+    <button class="drawer-close" onclick="closeDrawer()" aria-label="Close drawer">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-breadcrumb" id="drawer-breadcrumb"></div>
+  <div class="drawer-body" id="drawer-body">
+    <div class="drawer-loading"><div class="spinner"></div><span style="font-size:13px;color:var(--text-hint)">Loading files...</span></div>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand" onclick="switchTab('home', document.querySelector('[data-tab=home]'))">
+    <div class="brand-eyebrow">Ismaili Volunteers</div>
+    <div class="brand-name">IV Florida</div>
+    <div class="brand-sub">Regional Document Hub</div>
+  </div>
+  <div class="sidebar-search">
+    <input type="text" placeholder="Search centers..." oninput="filterCards(this.value)" />
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Navigation</div>
+    <a class="nav-item active" data-tab="home" onclick="switchTab('home', this)">
+      <span class="nav-code">HOM</span><span class="nav-title">Home</span>
+    </a>
+    <div class="nav-label" style="padding-top:8px;">Categories</div>
+    <a class="nav-item" data-tab="eop" onclick="switchTab('eop', this)">
+      <span class="nav-code">EOP</span><span class="nav-title">Emergency Procedures</span><span class="nav-count">5</span>
+    </a>
+    <a class="nav-item" data-tab="safety" onclick="switchTab('safety', this)">
+      <span class="nav-code">SAF</span><span class="nav-title">Safety</span><span class="nav-count">5</span>
+    </a>
+    <a class="nav-item" data-tab="rec" onclick="switchTab('rec', this)">
+      <span class="nav-code">REC</span><span class="nav-title">Religious Education</span><span class="nav-count">5</span>
+    </a>
+    <a class="nav-item" data-tab="camps" onclick="switchTab('camps', this)">
+      <span class="nav-code">CMP</span><span class="nav-title">Camps</span><span class="nav-count">5</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer">Permissions via <a href="https://drive.google.com" target="_blank">Google Drive ↗</a></div>
+</aside>
+
+<div class="main">
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="mobile-menu-btn" onclick="openSidebar()" aria-label="Open menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div>
+        <div class="topbar-title" id="topbar-title">Welcome</div>
+        <div class="topbar-meta" id="topbar-meta">IV Florida Regional Document Hub</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-badge" id="topbar-badge">HOME</span>
+      <div class="status-dot"></div>
+      <span class="status-text">All folders active</span>
+    </div>
+  </header>
+
+  <main class="content">
+
+    <!-- HOME PAGE -->
+    <div id="page-home">
+      <div class="home-hero">
+        <div class="home-eyebrow">Ismaili Volunteers Florida</div>
+        <h1 class="home-headline">Your regional <span>document hub</span> — organized by program and center</h1>
+        <p class="home-desc">A centralized access point for all IV Florida documents, safety protocols, educational materials, and camp records across all five centers. Click any category below to browse folders and files.</p>
+        <div class="home-stats">
+          <div><div class="home-stat-value">4</div><div class="home-stat-label">Categories</div></div>
+          <div><div class="home-stat-value">5</div><div class="home-stat-label">Centers</div></div>
+          <div><div class="home-stat-value">20</div><div class="home-stat-label">Folders</div></div>
+        </div>
+      </div>
+
+      <div class="home-cats">
+        <div class="home-cat-card" style="--cat-color:#F59E0B;--cat-muted:rgba(245,158,11,0.10);--cat-text:#92400E;" onclick="switchTab('eop', document.querySelector('[data-tab=eop]'))">
+          <div class="home-cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+          <div class="home-cat-code">EOP</div>
+          <div class="home-cat-name">Emergency Procedures</div>
+          <div class="home-cat-desc">Emergency operating procedures and response protocols for all centers</div>
+          <div class="home-cat-action">View 5 centers <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+        <div class="home-cat-card" style="--cat-color:#F87171;--cat-muted:rgba(248,113,113,0.10);--cat-text:#991B1B;" onclick="switchTab('safety', document.querySelector('[data-tab=safety]'))">
+          <div class="home-cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div class="home-cat-code">SAF</div>
+          <div class="home-cat-name">Safety</div>
+          <div class="home-cat-desc">Safety protocols, guidelines, and incident documentation</div>
+          <div class="home-cat-action">View 5 centers <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+        <div class="home-cat-card" style="--cat-color:#34D399;--cat-muted:rgba(52,211,153,0.10);--cat-text:#065F46;" onclick="switchTab('rec', document.querySelector('[data-tab=rec]'))">
+          <div class="home-cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+          <div class="home-cat-code">REC</div>
+          <div class="home-cat-name">Religious Education</div>
+          <div class="home-cat-desc">Curriculum, attendance, and program materials per center</div>
+          <div class="home-cat-action">View 5 centers <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+        <div class="home-cat-card" style="--cat-color:#818CF8;--cat-muted:rgba(129,140,248,0.10);--cat-text:#3730A3;" onclick="switchTab('camps', document.querySelector('[data-tab=camps]'))">
+          <div class="home-cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l4-8 4 4 3-6 4 10"/><path d="M3 17h18"/></svg></div>
+          <div class="home-cat-code">CMP</div>
+          <div class="home-cat-name">Camps</div>
+          <div class="home-cat-desc">Camp programs, event planning, and activity documentation</div>
+          <div class="home-cat-action">View 5 centers <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+      </div>
+
+      <div class="home-info">
+        <h3>How to use this hub</h3>
+        <p>Select a category from the left sidebar or the tiles above to view all five Florida centers. Click any center card to open a document drawer — browse subfolders and files without leaving the page. All files open directly in Google Drive.</p>
+        <p>Documents are organized and maintained by the IV Florida regional team. To upload or organize new files, use the <strong>_Dump</strong> folder in Google Drive and contact your regional coordinator.</p>
+      </div>
+    </div>
+
+    <!-- CATEGORY PAGES -->
+    <div class="category-page" id="page-eop">
+      <div class="cat-hero">
+        <div class="cat-hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div><div class="cat-hero-code">EOP</div><div class="cat-hero-name">Emergency Operating Procedures</div><div class="cat-hero-desc">Click a center to browse documents</div></div>
+        <div class="cat-hero-pill">5 centers</div>
+      </div>
+      <div class="center-grid">
+        <div class="center-card" onclick="openDrawer('eop','Miami','1jVrTx0C9iEmNrNKBR9jBRIfRhlh1DyAD','Miami — EOP')"><div class="card-top"><div class="card-initial">MIA</div><div class="card-dot"></div></div><div class="card-name">Miami</div><div class="card-label">Headquarters</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openDrawer('eop','Ft. Lauderdale','1gpcSGPhQYSw2IqJJuJxIM6L5i7OaTJ45','Ft. Lauderdale — EOP')"><div class="card-top"><div class="card-initial">FTL</div><div class="card-dot"></div></div><div class="card-name">Ft. Lauderdale</div><div class="card-label">Coral Springs</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openDrawer('eop','Orlando','1MG8GQlyr1GtW0qY2naY7TRruGMGsU2cW','Orlando — EOP')"><div class="card-top"><div class="card-initial">ORL</div><div class="card-dot"></div></div><div class="card-name">Orlando</div><div class="card-label">Central FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openDrawer('eop','Tampa','1D_7igH1-S-p0bATOhG0b3ii51tZg2HRR','Tampa — EOP')"><div class="card-top"><div class="card-initial">TPA</div><div class="card-dot"></div></div><div class="card-name">Tampa</div><div class="card-label">West FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openDrawer('eop','Ocala','1vfoo5356GfC68lDdeiVffT9NNaKJ4Rry','Ocala — EOP')"><div class="card-top"><div class="card-initial">OCA</div><div class="card-dot"></div></div><div class="card-name">Ocala</div><div class="card-label">North FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+      </div>
+    </div>
+
+    <div class="category-page" id="page-safety">
+      <div class="cat-hero">
+        <div class="cat-hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div><div class="cat-hero-code">SAF</div><div class="cat-hero-name">Safety</div><div class="cat-hero-desc">Click a center to browse documents</div></div>
+        <div class="cat-hero-pill">5 centers</div>
+      </div>
+      <div class="center-grid">
+        <div class="center-card" onclick="openDrawer('safety','Miami','1ieKjGv4Fv7YrQb-8JZ9KKzMq0lh4_qIo','Miami — Safety')"><div class="card-top"><div class="card-initial">MIA</div><div class="card-dot"></div></div><div class="card-name">Miami</div><div class="card-label">Headquarters</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openDrawer('safety','Ft. Lauderdale','1X-lsQxaFEH2aUE68RJBR1pQvBk2MXYYQ','Ft. Lauderdale — Safety')"><div class="card-top"><div class="card-initial">FTL</div><div class="card-dot"></div></div><div class="card-name">Ft. Lauderdale</div><div class="card-label">Coral Springs</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openDrawer('safety','Orlando','1XI0LnP0U0yEk9NzD7OL3O9Sp67j4EgCa','Orlando — Safety')"><div class="card-top"><div class="card-initial">ORL</div><div class="card-dot"></div></div><div class="card-name">Orlando</div><div class="card-label">Central FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openDrawer('safety','Tampa','1NzXaNqpBs1N1BSytd4zv1hOARG9RImHf','Tampa — Safety')"><div class="card-top"><div class="card-initial">TPA</div><div class="card-dot"></div></div><div class="card-name">Tampa</div><div class="card-label">West FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openDrawer('safety','Ocala','11Dc0bJC6A3nF2QWYg-wg5j2DMnMk8KrI','Ocala — Safety')"><div class="card-top"><div class="card-initial">OCA</div><div class="card-dot"></div></div><div class="card-name">Ocala</div><div class="card-label">North FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+      </div>
+    </div>
+
+    <div class="category-page" id="page-rec">
+      <div class="cat-hero">
+        <div class="cat-hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+        <div><div class="cat-hero-code">REC</div><div class="cat-hero-name">Religious Education Center</div><div class="cat-hero-desc">Click a center to browse documents</div></div>
+        <div class="cat-hero-pill">5 centers</div>
+      </div>
+      <div class="center-grid">
+        <div class="center-card" onclick="openDrawer('rec','Miami','10YqSvPui8lxfE31E4TpViKOqvliwmJ8G','Miami — REC')"><div class="card-top"><div class="card-initial">MIA</div><div class="card-dot"></div></div><div class="card-name">Miami</div><div class="card-label">Headquarters</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openDrawer('rec','Ft. Lauderdale','1c89iBn9Vse3h3HxgT9nuD6i3MonNfJ3v','Ft. Lauderdale — REC')"><div class="card-top"><div class="card-initial">FTL</div><div class="card-dot"></div></div><div class="card-name">Ft. Lauderdale</div><div class="card-label">Coral Springs</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openDrawer('rec','Orlando','1Z0DYQkYsPXUYOS--o-BAiAcFN2qgT2cA','Orlando — REC')"><div class="card-top"><div class="card-initial">ORL</div><div class="card-dot"></div></div><div class="card-name">Orlando</div><div class="card-label">Central FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openDrawer('rec','Tampa','1h6ra4O_LpF5bWgI6Xbo7M0S9MVk97yvB','Tampa — REC')"><div class="card-top"><div class="card-initial">TPA</div><div class="card-dot"></div></div><div class="card-name">Tampa</div><div class="card-label">West FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openDrawer('rec','Ocala','1ASR89ZA-mEfm1ayYRtqWV4Z1SeQTYyAh','Ocala — REC')"><div class="card-top"><div class="card-initial">OCA</div><div class="card-dot"></div></div><div class="card-name">Ocala</div><div class="card-label">North FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+      </div>
+    </div>
+
+    <div class="category-page" id="page-camps">
+      <div class="cat-hero">
+        <div class="cat-hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l4-8 4 4 3-6 4 10"/><path d="M3 17h18"/></svg></div>
+        <div><div class="cat-hero-code">CMP</div><div class="cat-hero-name">Camps</div><div class="cat-hero-desc">Click a center to browse documents</div></div>
+        <div class="cat-hero-pill">5 centers</div>
+      </div>
+      <div class="center-grid">
+        <div class="center-card" onclick="openDrawer('camps','Miami','17xUbiAyEXkH00P7Lf1O9bU4Fjsk3deGF','Miami — Camps')"><div class="card-top"><div class="card-initial">MIA</div><div class="card-dot"></div></div><div class="card-name">Miami</div><div class="card-label">Headquarters</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openDrawer('camps','Ft. Lauderdale','1qKYp_IeAarga1SiZou1Rg16PofdEi4Cf','Ft. Lauderdale — Camps')"><div class="card-top"><div class="card-initial">FTL</div><div class="card-dot"></div></div><div class="card-name">Ft. Lauderdale</div><div class="card-label">Coral Springs</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openDrawer('camps','Orlando','13epUEqPvVp0bmi98rX3znJMhLtAM8dVM','Orlando — Camps')"><div class="card-top"><div class="card-initial">ORL</div><div class="card-dot"></div></div><div class="card-name">Orlando</div><div class="card-label">Central FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openDrawer('camps','Tampa','1fKo-XKZGpcIUbSI2XkOj5CIlPKxCEKkY','Tampa — Camps')"><div class="card-top"><div class="card-initial">TPA</div><div class="card-dot"></div></div><div class="card-name">Tampa</div><div class="card-label">West FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openDrawer('camps','Ocala','12QeCkZtXbBzdSOTjBWoeyerVSF9tWDa8','Ocala — Camps')"><div class="card-top"><div class="card-initial">OCA</div><div class="card-dot"></div></div><div class="card-name">Ocala</div><div class="card-label">North FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const TABS = {
+  home:   { bg:'#F5F3EF', accent:'#01DC82', muted:'rgba(1,220,130,0.10)', badgeText:'#0B5E38', initial:'#EDF4F0', stripe:'#01DC82', title:'Welcome', meta:'IV Florida Regional Document Hub', badge:'HOME' },
+  eop:    { bg:'#FFFBEB', accent:'#F59E0B', muted:'rgba(245,158,11,0.10)', badgeText:'#92400E', initial:'#FEF9EC', stripe:'#F59E0B', title:'Emergency Operating Procedures', meta:'Select a center to browse documents', badge:'EOP' },
+  safety: { bg:'#FFF5F5', accent:'#F87171', muted:'rgba(248,113,113,0.10)', badgeText:'#991B1B', initial:'#FFF0F0', stripe:'#F87171', title:'Safety', meta:'Select a center to browse documents', badge:'SAF' },
+  rec:    { bg:'#F0FDF9', accent:'#34D399', muted:'rgba(52,211,153,0.10)', badgeText:'#065F46', initial:'#ECFDF5', stripe:'#34D399', title:'Religious Education Center', meta:'Select a center to browse documents', badge:'REC' },
+  camps:  { bg:'#F5F3FF', accent:'#818CF8', muted:'rgba(129,140,248,0.10)', badgeText:'#3730A3', initial:'#EEF2FF', stripe:'#818CF8', title:'Camps', meta:'Select a center to browse documents', badge:'CMP' }
+};
+
+let currentTab = 'home';
+
+function switchTab(tab, el) {
+  if (currentTab === tab) { closeSidebar(); return; }
+  currentTab = tab;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('page-home').style.display = tab === 'home' ? 'block' : 'none';
+  document.querySelectorAll('.category-page').forEach(p => p.classList.remove('active'));
+  if (tab !== 'home') document.getElementById('page-' + tab)?.classList.add('active');
+  const t = TABS[tab];
+  const root = document.documentElement;
+  root.style.setProperty('--tab-bg', t.bg);
+  root.style.setProperty('--tab-accent', t.accent);
+  root.style.setProperty('--tab-muted', t.muted);
+  root.style.setProperty('--tab-badge-text', t.badgeText);
+  root.style.setProperty('--tab-initial', t.initial);
+  root.style.setProperty('--tab-stripe', t.stripe);
+  document.getElementById('topbar-title').textContent = t.title;
+  document.getElementById('topbar-meta').textContent = t.meta;
+  document.getElementById('topbar-badge').textContent = t.badge;
+  closeSidebar();
+}
+
+// ── Drawer ──
+let drawerStack = [];
+let currentFolderId = null;
+let currentCenterName = '';
+let currentDriveLink = '';
+
+const FILE_ICONS = {
+  folder: '📁', doc: '📄', sheet: '📊', slides: '📑', pdf: '📕', image: '🖼', video: '🎬', file: '📎'
+};
+
+async function openDrawer(cat, center, folderId, title) {
+  drawerStack = [{ folderId, label: center, driveLink: `https://drive.google.com/drive/folders/${folderId}` }];
+  currentCenterName = center;
+  currentFolderId = folderId;
+  document.getElementById('drawer-title').textContent = title;
+  document.getElementById('drawer-subtitle').textContent = `${TABS[cat]?.badge || cat.toUpperCase()} · ${center}`;
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('drawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderBreadcrumb();
+  await loadFolder(folderId);
+}
+
+function closeDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.getElementById('drawer').classList.remove('open');
+  document.body.style.overflow = '';
+  drawerStack = [];
+}
+
+function renderBreadcrumb() {
+  const bc = document.getElementById('drawer-breadcrumb');
+  bc.innerHTML = drawerStack.map((item, i) =>
+    i < drawerStack.length - 1
+      ? `<span class="breadcrumb-item" onclick="navToStack(${i})">${item.label}</span><span class="breadcrumb-sep">›</span>`
+      : `<span style="color:var(--text-secondary)">${item.label}</span>`
+  ).join('');
+}
+
+async function navToStack(index) {
+  drawerStack = drawerStack.slice(0, index + 1);
+  renderBreadcrumb();
+  await loadFolder(drawerStack[drawerStack.length - 1].folderId);
+}
+
+async function loadFolder(folderId) {
+  const body = document.getElementById('drawer-body');
+  body.innerHTML = '<div class="drawer-loading"><div class="spinner"></div><span style="font-size:13px;color:var(--text-hint)">Loading files...</span></div>';
+
+  try {
+    const resp = await fetch(`/.netlify/functions/drive?folderId=${folderId}`);
+    const data = await resp.json();
+
+    if (data.error) {
+      body.innerHTML = `<div class="drawer-empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>${data.error}</p></div>`;
+      return;
+    }
+
+    const files = data.files || [];
+    const driveLink = `https://drive.google.com/drive/folders/${folderId}`;
+
+    if (files.length === 0) {
+      body.innerHTML = `<div class="drawer-empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><p>This folder is empty</p></div><div class="drawer-open-drive"><a href="${driveLink}" target="_blank" rel="noopener">Open in Google Drive <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>`;
+      return;
+    }
+
+    const listHTML = files.map(f => {
+      const icon = FILE_ICONS[f.type] || FILE_ICONS.file;
+      const modified = f.modified ? new Date(f.modified).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '';
+      if (f.isFolder) {
+        return `<div class="file-item" onclick="drillIntoFolder('${f.id}','${f.name.replace(/'/g, "\\'")}')">
+          <div class="file-icon folder">${icon}</div>
+          <div class="file-name">${f.name}</div>
+          <div class="file-meta">${modified}</div>
+          <svg class="file-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        </div>`;
+      }
+      return `<a class="file-item" href="${f.viewLink}" target="_blank" rel="noopener">
+        <div class="file-icon ${f.type}">${icon}</div>
+        <div class="file-name">${f.name}</div>
+        <div class="file-meta">${modified}</div>
+        <svg class="file-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>`;
+    }).join('');
+
+    body.innerHTML = `<div class="file-list">${listHTML}</div><div class="drawer-open-drive"><a href="${driveLink}" target="_blank" rel="noopener">Open folder in Google Drive <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>`;
+
+  } catch(err) {
+    body.innerHTML = `<div class="drawer-empty"><p style="color:var(--text-hint)">Could not load files. Check your connection.</p></div>`;
+  }
+}
+
+async function drillIntoFolder(folderId, name) {
+  drawerStack.push({ folderId, label: name, driveLink: `https://drive.google.com/drive/folders/${folderId}` });
+  renderBreadcrumb();
+  await loadFolder(folderId);
+}
+
+function filterCards(q) {
+  q = q.toLowerCase().trim();
+  document.querySelectorAll('.center-card').forEach(card => {
+    const name = card.querySelector('.card-name')?.innerText?.toLowerCase() || '';
+    const label = card.querySelector('.card-label')?.innerText?.toLowerCase() || '';
+    card.style.display = (!q || name.includes(q) || label.includes(q)) ? '' : 'none';
+  });
+}
+
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('overlay-mob').classList.add('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay-mob').classList.remove('show');
+}
+</script>
+</body>
+</html>
