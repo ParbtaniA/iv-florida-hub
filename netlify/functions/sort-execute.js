@@ -95,7 +95,8 @@ exports.handler = async (event) => {
 
   const results = { sorted: [], errors: [], tokenSource };
 
-  for (const item of allItems) {
+  // Process all files in parallel
+  await Promise.all(allItems.map(async (item) => {
     try {
       // 1. Copy to center folder
       const copyResp = await fetch(`https://www.googleapis.com/drive/v3/files/${item.id}/copy`, {
@@ -133,7 +134,7 @@ exports.handler = async (event) => {
     } catch (err) {
       results.errors.push({ name: item.name, error: err.message });
     }
-  }
+  }));
 
   results.dumpCleared = results.errors.length === 0 && ambiguousOverrides.length === 0;
   return { statusCode: 200, headers, body: JSON.stringify(results) };
