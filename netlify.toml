@@ -4,3 +4,15 @@
 
 [build.environment]
   NODE_VERSION = "18"
+
+[functions]
+  node_bundler = "esbuild"
+
+[functions."sort-execute"]
+  timeout = 26
+
+[functions."sort-preview"]
+  timeout = 20
+
+[functions."approve-move"]
+  timeout = 20
