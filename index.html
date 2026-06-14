@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IV Florida — Document Hub</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #0f2333; --green: #01DC82; --green-dim: #00b86c;
+    --surface: #f7f9fb; --card: #ffffff; --border: #e2e8ef;
+    --text-primary: #0f2333; --text-secondary: #5a6a7a; --text-hint: #9aaabb;
+    --radius: 12px; --radius-sm: 8px;
+  }
+  body { font-family: 'Inter', sans-serif; background: var(--surface); color: var(--text-primary); min-height: 100vh; }
+  header { background: var(--navy); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 10; }
+  .header-brand { display: flex; align-items: center; gap: 12px; }
+  .header-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+  .header-title { font-size: 14px; font-weight: 500; color: #fff; letter-spacing: 0.01em; }
+  .header-sub { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 1px; }
+  .header-badge { font-size: 11px; font-weight: 500; color: var(--navy); background: var(--green); padding: 4px 10px; border-radius: 99px; }
+  main { max-width: 960px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+  .page-intro { margin-bottom: 2.5rem; }
+  .page-intro h1 { font-size: 26px; font-weight: 600; line-height: 1.2; }
+  .page-intro p { font-size: 14px; color: var(--text-secondary); margin-top: 6px; line-height: 1.6; }
+  .search-wrap { margin-bottom: 2rem; }
+  .search-input { width: 100%; max-width: 400px; padding: 10px 14px 10px 38px; font-size: 14px; font-family: 'Inter', sans-serif; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239aaabb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 12px center; color: var(--text-primary); outline: none; transition: border-color 0.15s; }
+  .search-input:focus { border-color: var(--green-dim); }
+  .search-input::placeholder { color: var(--text-hint); }
+  .category-section { margin-bottom: 2.5rem; }
+  .category-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+  .category-icon { width: 32px; height: 32px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .category-icon svg { width: 16px; height: 16px; }
+  .category-name { font-size: 15px; font-weight: 600; }
+  .category-desc { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+  .category-count { margin-left: auto; font-size: 11px; color: var(--text-hint); font-weight: 500; }
+  .center-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+  .center-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 8px; transition: border-color 0.15s, transform 0.1s; }
+  .center-card:hover { border-color: var(--green-dim); transform: translateY(-1px); }
+  .center-card:active { transform: translateY(0); }
+  .center-initial { width: 34px; height: 34px; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.02em; }
+  .center-name { font-size: 13px; font-weight: 500; line-height: 1.3; }
+  .center-label { font-size: 11px; color: var(--text-hint); }
+  .center-arrow { margin-top: auto; color: var(--green-dim); font-size: 16px; line-height: 1; }
+  .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-hint); font-size: 14px; display: none; }
+  footer { text-align: center; padding: 2rem 1rem; font-size: 12px; color: var(--text-hint); border-top: 1px solid var(--border); }
+  footer a { color: var(--green-dim); text-decoration: none; }
+  @media (max-width: 600px) { header { padding: 0 1rem; } main { padding: 1.5rem 1rem 3rem; } .center-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-brand">
+    <div class="header-dot"></div>
+    <div>
+      <div class="header-title">Ismaili Volunteers Florida</div>
+      <div class="header-sub">Regional Document Hub</div>
+    </div>
+  </div>
+  <div class="header-badge">IV Florida</div>
+</header>
+
+<main>
+  <div class="page-intro">
+    <h1>Document Hub</h1>
+    <p>Select a category and center to access the shared Google Drive folder. All permissions are managed on Drive.</p>
+  </div>
+
+  <div class="search-wrap">
+    <input class="search-input" type="text" placeholder="Search categories or centers..." oninput="filterAll(this.value)" />
+  </div>
+
+  <div id="all-sections">
+
+    <!-- EOP -->
+    <div class="category-section" data-category="eop emergency operating procedures">
+      <div class="category-header">
+        <div class="category-icon" style="background:#fff3cd;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div><div class="category-name">EOP</div><div class="category-desc">Emergency Operating Procedures</div></div>
+        <div class="category-count">5 centers</div>
+      </div>
+      <div class="center-grid">
+        <a class="center-card" href="https://drive.google.com/drive/folders/1jVrTx0C9iEmNrNKBR9jBRIfRhlh1DyAD" target="_blank" rel="noopener" data-center="miami"><div class="center-initial">MIA</div><div class="center-name">Miami</div><div class="center-label">HQ</div><div class="center-arrow">↗</div></a>
+        <a class="center-card" href="https://drive.google.com/drive/folders/1gpcSGPhQYSw2IqJJuJxIM6L5i7OaTJ45" target="_blank" rel="noopener" data-center="fort lauderdale"><div class="center-initial">FTL</div><div class="center-name">Ft. Lauderdale</div><div class="center-label">Coral Springs</div><div class="center-arrow">↗</div></a>
+        <a class="center-card" href="https://drive.google.com/drive/folders/1MG8GQlyr1GtW0qY2naY7TRruGMGsU2cW" target="_blank" rel="noopener" data-center="orlando"><div class="center-initial">ORL</div><div class="center-name">Orlando</div><div class="center-label">Central FL</div><div class="center-arrow">↗</div></a>
+        <a class="center-card" href="https://drive.google.com/drive/folders/1D_7igH1-S-p0bATOhG0b3ii51tZg2HRR" target="_blank" rel="noopener" data-center="tampa"><div class="center-initial">TPA</div><div class="center-name">Tampa</div><div class="center-label">West FL</div><div class="center-arrow">↗</div></a>
+        <a class="center-card" href="https://drive.google.com/drive/folders/1vfoo5356GfC68lDdeiVffT9NNaKJ4Rry" target="_blank" rel="noopener" data-center="ocala"><div class="center-initial">OCA</div><div class="center-name">Ocala</div><div class="center-label">North FL</div><div class="center-arrow">↗</div></a>
+      </div>
+    </div>
+
+    <!-- Safety -->
+    <div class="category-section" data-category="safety">
+      <div class="category-header">
+        <div class="category-icon" style="background:#fce7e7;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div><div class="category-name">Safety</div><div class="category-desc">Safety protocols and guidelines</div></div>
+        <div class="category-count">5 centers</div>
+      </div>
+      <div class="center-grid">
+        <a class="center-card" href="https://drive.google.com/drive/folders/1ieKjGv4Fv7YrQb-8JZ9KKzMq0lh4_qIo" target="_blank" rel="noopener" data-center="miami"><div class="center-initial">MIA</div><div class="center-name">Miami</div><div class="center-label">HQ</div><div class="center-arrow">↗</div></a>
+        <a class="center-card" href="https://drive.google.com/drive/folders/1X-lsQxaFEH2aUE68RJBR1pQvBk2MXYYQ" target="_blank" rel="noopener" data-center="fort lauderdale"><div class="center-initial">FTL</div><div class="center-name">Ft. Lauderdale</div><div class="center-label">Coral Springs</div><div class="center-arrow">↗</div></a>
+        <a class="center-card" href="https://drive.google.com/drive/folders/1XI0LnP0U0yEk9NzD7OL3O9Sp67j4EgCa" target="_blank" rel="noopener" data-center="orlando"><div class="center-initial">ORL</div><div class="center-name">Orlando</div><div class="center-label">Central FL</div><div class="center-arrow">↗</div></a>
+        <a class="center-card" href="https://drive.google.com/drive/folders/1NzXaNqpBs1N1BSytd4zv1hOARG9RImHf" target="_blank" rel="noopener" data-center="tampa"><div class="center-initial">TPA</div><div class="center-name">Tampa</div><div class="center-label">West FL</div><div class="center-arrow">↗</div></a>
+        <a class="center-card" href="https://drive.google.com/drive/folders/11Dc0bJC6A3nF2QWYg-wg5j2DMnMk8KrI" target="_blank" rel="noopener" data-center="ocala"><div class="center-initial">OCA</div><div class="center-name">Ocala</div><div class="center-label">North FL</div><div class="center-arrow">↗</div></a>
+      </div>
+    </div>
+
+    <!-- REC -->
+    <div class="category-section" data-category="rec religious education center">
+      <div class="category-header">
+        <div class="category-icon" style="background:#e8f5e9;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <div><div class="category-name">REC</div><div class="category-desc">Religious Education Center</div></div>
+        <div class="category-count">5 centers</div>
+      </div>
+      <div class="center-grid">
+        <a class="center-card" href="https://drive.google.com/drive/folders/10YqSvPui8lxfE31E4TpViKOqvliwmJ8G" target="_blank" rel="noopener" data-center="miami"><div class="center-initial">MIA</div><div class="center-name">Miami</div><div class="center-label">HQ</div><div class="center-arrow">↗</div></a>
+        <a class="center-card" href="https://drive.google.com/drive/folders/1c89iBn9Vse3h3HxgT9nuD6i3MonNfJ3v" target="_blank" rel="noopener" data-center="fort lauderdale"><div class="center-initial">FTL</div><div class="center-name">Ft. Lauderdale</div><div class="center-label">Coral Springs</div><div class="center-arrow">↗</div></a>
+        <a class="center-card" href="https://drive.google.com/drive/folders/1Z0DYQkYsPXUYOS--o-BAiAcFN2qgT2cA" target="_blank" rel="noopener" data-center="orlando"><div class="center-initial">ORL</div><div class="center-name">Orlando</div><div class="center-label">Central FL</div><div class="center-arrow">↗</div></a>
+        <a class="center-card" href="https://drive.google.com/drive/folders/1h6ra4O_LpF5bWgI6Xbo7M0S9MVk97yvB" target="_blank" rel="noopener" data-center="tampa"><div class="center-initial">TPA</div><div class="center-name">Tampa</div><div class="center-label">West FL</div><div class="center-arrow">↗</div></a>
+        <a class="center-card" href="https://drive.google.com/drive/folders/1ASR89ZA-mEfm1ayYRtqWV4Z1SeQTYyAh" target="_blank" rel="noopener" data-center="ocala"><div class="center-initial">OCA</div><div class="center-name">Ocala</div><div class="center-label">North FL</div><div class="center-arrow">↗</div></a>
+      </div>
+    </div>
+
+    <!-- Camps -->
+    <div class="category-section" data-category="camps">
+      <div class="category-header">
+        <div class="category-icon" style="background:#ede9fe;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#5b21b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l4-8 4 4 3-6 4 10"/><path d="M3 17h18"/></svg>
+        </div>
+        <div><div class="category-name">Camps</div><div class="category-desc">Camp programs and events</div></div>
+        <div class="category-count">5 centers</div>
+      </div>
+      <div class="center-grid">
+        <a class="center-card" href="https://drive.google.com/drive/folders/17xUbiAyEXkH00P7Lf1O9bU4Fjsk3deGF" target="_blank" rel="noopener" data-center="miami"><div class="center-initial">MIA</div><div class="center-name">Miami</div><div class="center-label">HQ</div><div class="center-arrow">↗</div></a>
+        <a class="center-card" href="https://drive.google.com/drive/folders/1qKYp_IeAarga1SiZou1Rg16PofdEi4Cf" target="_blank" rel="noopener" data-center="fort lauderdale"><div class="center-initial">FTL</div><div class="center-name">Ft. Lauderdale</div><div class="center-label">Coral Springs</div><div class="center-arrow">↗</div></a>
+        <a class="center-card" href="https://drive.google.com/drive/folders/13epUEqPvVp0bmi98rX3znJMhLtAM8dVM" target="_blank" rel="noopener" data-center="orlando"><div class="center-initial">ORL</div><div class="center-name">Orlando</div><div class="center-label">Central FL</div><div class="center-arrow">↗</div></a>
+        <a class="center-card" href="https://drive.google.com/drive/folders/1fKo-XKZGpcIUbSI2XkOj5CIlPKxCEKkY" target="_blank" rel="noopener" data-center="tampa"><div class="center-initial">TPA</div><div class="center-name">Tampa</div><div class="center-label">West FL</div><div class="center-arrow">↗</div></a>
+        <a class="center-card" href="https://drive.google.com/drive/folders/12QeCkZtXbBzdSOTjBWoeyerVSF9tWDa8" target="_blank" rel="noopener" data-center="ocala"><div class="center-initial">OCA</div><div class="center-name">Ocala</div><div class="center-label">North FL</div><div class="center-arrow">↗</div></a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="empty-state" id="empty-state">No folders match your search.</div>
+</main>
+
+<footer>
+  IV Florida Document Hub &mdash; Permissions managed via <a href="https://drive.google.com" target="_blank" rel="noopener">Google Drive</a>
+</footer>
+
+<script>
+  function filterAll(val) {
+    const q = val.toLowerCase().trim();
+    let anyVisible = false;
+    document.querySelectorAll('.category-section').forEach(section => {
+      const catMatch = section.dataset.category.includes(q);
+      let cardVisible = false;
+      section.querySelectorAll('.center-card').forEach(card => {
+        const centerMatch = card.dataset.center.includes(q);
+        const show = q === '' || catMatch || centerMatch;
+        card.style.display = show ? '' : 'none';
+        if (show) cardVisible = true;
+      });
+      const show = q === '' || catMatch || cardVisible;
+      section.style.display = show ? '' : 'none';
+      if (show) anyVisible = true;
+    });
+    document.getElementById('empty-state').style.display = anyVisible ? 'none' : 'block';
+  }
+</script>
+
+</body>
+</html>
