@@ -221,6 +221,25 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
 .sort-dest { font-family: 'DM Mono', monospace; font-size: 11px; opacity: 0.7; margin-left: auto; white-space: nowrap; flex-shrink: 0; }
 .sort-modal-footer { display: flex; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
 .sort-empty { text-align: center; padding: 20px 0; font-size: 14px; color: var(--text-secondary); }
+/* Upload modal */
+.upload-modal-overlay { position: fixed; inset: 0; background: rgba(11,31,53,0.5); z-index: 300; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.upload-modal-overlay.open { opacity: 1; pointer-events: all; }
+.upload-modal { background: #fff; border-radius: 16px; padding: 28px; width: 460px; max-width: calc(100vw - 40px); box-shadow: 0 20px 60px rgba(11,31,53,0.2); }
+.upload-modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.upload-modal-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 22px; line-height: 1.5; }
+.upload-option { border: 1.5px solid var(--border); border-radius: 12px; padding: 18px 20px; cursor: pointer; transition: border-color 0.15s, background 0.15s; margin-bottom: 10px; display: flex; align-items: flex-start; gap: 14px; }
+.upload-option:hover { border-color: var(--navy); background: #F8F9FA; }
+.upload-option-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.upload-option-icon.green { background: rgba(1,220,130,0.12); }
+.upload-option-icon.navy { background: rgba(11,31,53,0.08); }
+.upload-option-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.upload-option-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+.upload-select-row { display: flex; gap: 10px; margin-top: 14px; }
+.upload-select-row select { flex: 1; border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text-primary); outline: none; background: #fff; }
+.upload-select-row select:focus { border-color: var(--navy); }
+.upload-confirm-btn { background: var(--navy); color: #fff; border: none; border-radius: 8px; padding: 9px 18px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.upload-confirm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.upload-modal-footer { display: flex; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
 </style>
 </head>
 <body>
@@ -289,10 +308,10 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
       </div>
     </div>
     <div class="topbar-right">
-      <a href="https://drive.google.com/drive/folders/1T3ADK73rj5CizyVIZ6popjiYjgFUZAqY" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:7px;background:var(--green);color:#0B1F35;font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;text-decoration:none;transition:background 0.15s;white-space:nowrap;" onmouseover="this.style.background='#00c973'" onmouseout="this.style.background='var(--green)'">
+      <button onclick="openUploadModal()" style="display:flex;align-items:center;gap:7px;background:var(--green);color:#0B1F35;font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;transition:background 0.15s;white-space:nowrap;font-family:inherit;" onmouseover="this.style.background='#00c973'" onmouseout="this.style.background='var(--green)'">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         Upload files
-      </a>
+      </button>
       <button onclick="openSortModal()" style="display:flex;align-items:center;gap:7px;background:#0B1F35;color:#fff;font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;transition:background 0.15s;white-space:nowrap;font-family:inherit;" onmouseover="this.style.background='#0d2840'" onmouseout="this.style.background='#0B1F35'">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
         Sort files
@@ -418,6 +437,51 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
     </div>
 
   </main>
+</div>
+
+<!-- Upload modal -->
+<div class="upload-modal-overlay" id="upload-modal-overlay">
+  <div class="upload-modal">
+    <h3>Upload files</h3>
+    <div class="upload-modal-sub">Where would you like to upload? If you know the category and center, choose the first option. Otherwise drop it in Dump and the admin will sort it.</div>
+
+    <div class="upload-option" onclick="toggleUploadRoute('guided')">
+      <div class="upload-option-icon green">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div style="flex:1">
+        <div class="upload-option-title">I know where it goes</div>
+        <div class="upload-option-desc">Pick a category and center — your file will go to that folder and the admin will be notified to approve placement.</div>
+        <div class="upload-select-row" id="upload-guided-selects" style="display:none">
+          <select id="upload-cat-sel" onchange="updateUploadCenters()">
+            <option value="">Category…</option>
+            <option value="eop">EOP — Emergency Procedures</option>
+            <option value="safety">Safety</option>
+            <option value="rec">REC — Religious Education</option>
+            <option value="camps">Camps</option>
+          </select>
+          <select id="upload-center-sel" disabled>
+            <option value="">Center…</option>
+          </select>
+          <button class="upload-confirm-btn" id="upload-guided-btn" disabled onclick="openGuidedUpload()">Open folder ↗</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="upload-option" onclick="openDumpUpload()">
+      <div class="upload-option-icon navy">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B1F35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div>
+        <div class="upload-option-title">Not sure — let admin sort it</div>
+        <div class="upload-option-desc">Drops the file in the Dump folder. The admin will classify and move it to the right place.</div>
+      </div>
+    </div>
+
+    <div class="upload-modal-footer">
+      <button class="btn-cancel" onclick="closeUploadModal()">Cancel</button>
+    </div>
+  </div>
 </div>
 
 <!-- Sort modal -->
@@ -705,6 +769,77 @@ async function submitMoveRequest() {
     alert('Could not submit request: ' + err.message);
   }
 }
+
+// ── Upload modal ──
+const UPLOAD_FOLDERS = {
+  eop:    { Miami:'1jVrTx0C9iEmNrNKBR9jBRIfRhlh1DyAD', FtLauderdale:'1gpcSGPhQYSw2IqJJuJxIM6L5i7OaTJ45', Orlando:'1MG8GQlyr1GtW0qY2naY7TRruGMGsU2cW', Tampa:'1D_7igH1-S-p0bATOhG0b3ii51tZg2HRR', Ocala:'1vfoo5356GfC68lDdeiVffT9NNaKJ4Rry' },
+  safety: { Miami:'1ieKjGv4Fv7YrQb-8JZ9KKzMq0lh4_qIo', FtLauderdale:'1X-lsQxaFEH2aUE68RJBR1pQvBk2MXYYQ', Orlando:'1XI0LnP0U0yEk9NzD7OL3O9Sp67j4EgCa', Tampa:'1NzXaNqpBs1N1BSytd4zv1hOARG9RImHf', Ocala:'11Dc0bJC6A3nF2QWYg-wg5j2DMnMk8KrI' },
+  rec:    { Miami:'10YqSvPui8lxfE31E4TpViKOqvliwmJ8G', FtLauderdale:'1c89iBn9Vse3h3HxgT9nuD6i3MonNfJ3v', Orlando:'1Z0DYQkYsPXUYOS--o-BAiAcFN2qgT2cA', Tampa:'1h6ra4O_LpF5bWgI6Xbo7M0S9MVk97yvB', Ocala:'1ASR89ZA-mEfm1ayYRtqWV4Z1SeQTYyAh' },
+  camps:  { Miami:'17xUbiAyEXkH00P7Lf1O9bU4Fjsk3deGF', FtLauderdale:'1qKYp_IeAarga1SiZou1Rg16PofdEi4Cf', Orlando:'13epUEqPvVp0bmi98rX3znJMhLtAM8dVM', Tampa:'1fKo-XKZGpcIUbSI2XkOj5CIlPKxCEKkY', Ocala:'12QeCkZtXbBzdSOTjBWoeyerVSF9tWDa8' }
+};
+const UPLOAD_CENTER_LABELS = { Miami:'Miami', FtLauderdale:'Ft. Lauderdale', Orlando:'Orlando', Tampa:'Tampa', Ocala:'Ocala' };
+
+function openUploadModal() {
+  // Reset state
+  document.getElementById('upload-cat-sel').value = '';
+  document.getElementById('upload-center-sel').value = '';
+  document.getElementById('upload-center-sel').disabled = true;
+  document.getElementById('upload-guided-btn').disabled = true;
+  document.getElementById('upload-guided-selects').style.display = 'none';
+  document.getElementById('upload-modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeUploadModal() {
+  document.getElementById('upload-modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function toggleUploadRoute(type) {
+  if (type === 'guided') {
+    const el = document.getElementById('upload-guided-selects');
+    el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+  }
+}
+
+function updateUploadCenters() {
+  const cat = document.getElementById('upload-cat-sel').value;
+  const sel = document.getElementById('upload-center-sel');
+  sel.innerHTML = '<option value="">Center…</option>';
+  if (cat) {
+    Object.entries(UPLOAD_CENTER_LABELS).forEach(([key, label]) => {
+      const opt = document.createElement('option');
+      opt.value = key; opt.textContent = label;
+      sel.appendChild(opt);
+    });
+    sel.disabled = false;
+  } else {
+    sel.disabled = true;
+  }
+  sel.onchange = () => {
+    document.getElementById('upload-guided-btn').disabled = !(cat && sel.value);
+  };
+  document.getElementById('upload-guided-btn').disabled = true;
+}
+
+function openGuidedUpload(e) {
+  if (e) e.stopPropagation();
+  const cat = document.getElementById('upload-cat-sel').value;
+  const center = document.getElementById('upload-center-sel').value;
+  const folderId = UPLOAD_FOLDERS[cat]?.[center];
+  if (!folderId) return;
+  window.open(`https://drive.google.com/drive/folders/${folderId}`, '_blank');
+  closeUploadModal();
+}
+
+function openDumpUpload() {
+  window.open('https://drive.google.com/drive/folders/1T3ADK73rj5CizyVIZ6popjiYjgFUZAqY', '_blank');
+  closeUploadModal();
+}
+
+document.getElementById('upload-modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeUploadModal();
+});
 
 // ── Sort modal ──
 let _sortPlan = [], _sortAmbiguous = [];
