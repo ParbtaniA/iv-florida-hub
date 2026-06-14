@@ -90,9 +90,10 @@ exports.handler = async (event) => {
 
   // Try admin OAuth first, fall back to SA write token
   let token = await getAdminDriveToken();
+  const tokenSource = token ? 'admin_oauth' : 'sa_fallback';
   if (!token) token = await getSAWriteToken();
 
-  const results = { sorted: [], errors: [] };
+  const results = { sorted: [], errors: [], tokenSource };
 
   for (const item of allItems) {
     try {
