@@ -2,12 +2,5 @@
   publish = "."
   functions = "netlify/functions"
 
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Content-Type = "text/html; charset=UTF-8"
-
-[[headers]]
-  for = "/*.json"
-  [headers.values]
-    Content-Type = "application/json"
+[build.environment]
+  NODE_VERSION = "18"
