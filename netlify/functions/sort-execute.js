@@ -47,19 +47,9 @@ async function getSAWriteToken() {
 async function getAdminDriveToken() {
   const clientId     = process.env.GOOGLE_OAUTH_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
-  const NETLIFY_TOKEN = process.env.NETLIFY_BLOBS_TOKEN;
-  const NETLIFY_SITE_ID = process.env.NETLIFY_SITE_ID;
-
+  const refreshToken = process.env.ADMIN_REFRESH_TOKEN;
+  if (!refreshToken) return null;
   try {
-    // Read refresh token from Blobs
-    const blobResp = await fetch(
-      `https://api.netlify.com/api/v1/blobs/${NETLIFY_SITE_ID}/admin-tokens/refresh_token`,
-      { headers: { Authorization: `Bearer ${NETLIFY_TOKEN}` } }
-    );
-    if (!blobResp.ok) return null;
-    const refreshToken = await blobResp.text();
-    if (!refreshToken) return null;
-
     const r = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
