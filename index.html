@@ -448,13 +448,10 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
       <div class="cat-hero">
         <div class="cat-hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
         <div><div class="cat-hero-code">REG</div><div class="cat-hero-name">Regional Docs</div><div class="cat-hero-desc">Resources that apply across all centers and verticals</div></div>
-        <div class="cat-hero-pill">4 sections</div>
+        <div class="cat-hero-pill" id="regional-pill">Loading…</div>
       </div>
-      <div class="center-grid">
-        <div class="center-card" onclick="openRegionalDrawer('SOPs','1L0gp1dpslHnvaak9opm5O0WoshnG__Bq')"><div class="card-top"><div class="card-initial" style="font-size:9px">SOP</div><div class="card-dot"></div></div><div class="card-name">SOPs</div><div class="card-label">Standard operating procedures</div><div class="card-action">Browse <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openRegionalDrawer('Driving','1ZknNuK6I-v8OmVcRgrnzdTLcEraOW18M')"><div class="card-top"><div class="card-initial" style="font-size:9px">DRV</div><div class="card-dot"></div></div><div class="card-name">Driving</div><div class="card-label">Vehicle & driving resources</div><div class="card-action">Browse <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openRegionalDrawer('Procedures','1S29MKkoGHplOetWjWzbzD_4xZl7alsrM')"><div class="card-top"><div class="card-initial" style="font-size:9px">PRO</div><div class="card-dot"></div></div><div class="card-name">Procedures</div><div class="card-label">General procedures & guidelines</div><div class="card-action">Browse <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openRegionalDrawer('General','15kaTbNoa1XT2ViYqcnpepTIla9YDTZ8f')"><div class="card-top"><div class="card-initial" style="font-size:9px">GEN</div><div class="card-dot"></div></div><div class="card-name">General</div><div class="card-label">Other regional resources</div><div class="card-action">Browse <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+      <div class="center-grid" id="regional-grid">
+        <div class="drawer-loading"><div class="spinner"></div><span style="font-size:13px;color:var(--text-hint)">Loading sections…</span></div>
       </div>
     </div>
 
@@ -651,6 +648,7 @@ function switchTab(tab, el) {
   document.getElementById('topbar-title').textContent = t.title;
   document.getElementById('topbar-meta').textContent = t.meta;
   document.getElementById('topbar-badge').textContent = t.badge;
+  if (tab === 'regional') loadRegionalSections();
   closeSidebar();
 }
 
@@ -853,6 +851,49 @@ async function submitMoveRequest() {
     btn.disabled = false; btn.textContent = 'Submit request';
     alert('Could not submit request: ' + err.message);
   }
+}
+
+// ── Regional tab ──
+const REGIONAL_DRIVE_FOLDERS = {
+  SOPs:       { id: '1L0gp1dpslHnvaak9opm5O0WoshnG__Bq', label: 'Standard operating procedures', abbr: 'SOP' },
+  Driving:    { id: '1ZknNuK6I-v8OmVcRgrnzdTLcEraOW18M', label: 'Vehicle & driving resources', abbr: 'DRV' },
+  Procedures: { id: '1S29MKkoGHplOetWjWzbzD_4xZl7alsrM', label: 'General procedures & guidelines', abbr: 'PRO' },
+  General:    { id: '15kaTbNoa1XT2ViYqcnpepTIla9YDTZ8f', label: 'Other regional resources', abbr: 'GEN' },
+};
+
+async function loadRegionalSections() {
+  const grid = document.getElementById('regional-grid');
+  const pill = document.getElementById('regional-pill');
+  if (!grid) return;
+
+  // Discover custom sections from Blobs
+  let customSections = [];
+  try {
+    const r = await fetch('/.netlify/functions/get-regional-sections');
+    if (r.ok) { const data = await r.json(); customSections = data.sections || []; }
+  } catch {}
+
+  // Merge: Drive folders first, then any Blobs-only sections
+  const allSections = { ...REGIONAL_DRIVE_FOLDERS };
+  customSections.forEach(s => {
+    if (!allSections[s]) allSections[s] = { id: null, label: 'Custom section', abbr: s.slice(0,3).toUpperCase() };
+  });
+
+  const entries = Object.entries(allSections);
+  if (pill) pill.textContent = entries.length + ' section' + (entries.length !== 1 ? 's' : '');
+
+  const arrowSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+
+  grid.innerHTML = entries.map(([name, info]) => `
+    <div class="center-card" onclick="openRegionalDrawer('${name}', '${info.id || ''}')">
+      <div class="card-top">
+        <div class="card-initial" style="font-size:9px">${info.abbr}</div>
+        <div class="card-dot"></div>
+      </div>
+      <div class="card-name">${name}</div>
+      <div class="card-label">${info.label}</div>
+      <div class="card-action">Browse ${arrowSvg}</div>
+    </div>`).join('');
 }
 
 // ── Regional drawer ──
