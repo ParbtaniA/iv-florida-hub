@@ -5,9 +5,10 @@
 const SITE_ID = '3bfe8c7b-192d-4d4d-aa10-6aced98a037c';
 const TOKEN   = process.env.NETLIFY_BLOBS_TOKEN;
 
-async function blobList(store, prefix) {
-  const url = `https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}${prefix ? '?prefix=' + encodeURIComponent(prefix) : ''}`;
-  const r = await fetch(url, { headers: { Authorization: `Bearer ${TOKEN}` } });
+async function blobListAll(store) {
+  const r = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}`, {
+    headers: { Authorization: `Bearer ${TOKEN}` }
+  });
   if (!r.ok) return [];
   const d = await r.json();
   return d.blobs || [];
@@ -15,7 +16,7 @@ async function blobList(store, prefix) {
 
 async function blobGet(store, key) {
   const r = await fetch(
-    `https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}/${encodeURIComponent(key)}`,
+    `https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}/${key}`,
     { headers: { Authorization: `Bearer ${TOKEN}` } }
   );
   if (!r.ok) return null;
@@ -29,25 +30,29 @@ exports.handler = async (event) => {
   const { store, section, category, center } = event.queryStringParameters || {};
 
   try {
-    let blobs = [];
+    let storeName, filterFn;
 
     if (store === 'regional' && section) {
-      blobs = await blobList('links-regional', `${section}:`);
+      storeName = 'links-regional';
+      // Keys are stored as encodeURIComponent(`${section}:${id}`)
+      // so decode the key and check prefix
+      filterFn = (key) => decodeURIComponent(key).startsWith(`${section}:`);
     } else if (store === 'center' && category && center) {
-      blobs = await blobList('links-center', `${category}:${center}:`);
+      storeName = 'links-center';
+      filterFn = (key) => decodeURIComponent(key).startsWith(`${category}:${center}:`);
     } else {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid params' }) };
     }
 
-    const links = await Promise.all(blobs.map(b => blobGet(
-      store === 'regional' ? 'links-regional' : 'links-center',
-      b.key
-    )));
+    const allBlobs = await blobListAll(storeName);
+    const matching = allBlobs.filter(b => filterFn(b.key));
 
-    return {
-      statusCode: 200, headers,
-      body: JSON.stringify({ links: links.filter(Boolean).sort((a,b) => a.name.localeCompare(b.name)) })
-    };
+    const links = await Promise.all(
+      matching.map(b => blobGet(storeName, b.key))
+    );
+
+    const filtered = links.filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
+    return { statusCode: 200, headers, body: JSON.stringify({ links: filtered }) };
   } catch (err) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
   }
