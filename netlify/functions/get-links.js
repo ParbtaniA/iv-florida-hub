@@ -29,7 +29,7 @@ exports.handler = async (event) => {
     const allBlobs = await blobList(storeName);
     const matching = allBlobs.filter(b => filterFn(b.key));
     const links = await Promise.all(matching.map(b => blobGet(storeName, b.key)));
-    return { statusCode: 200, headers, body: JSON.stringify({ links: links.filter(Boolean).sort((a,b) => a.name.localeCompare(b.name)) }) };
+    return { statusCode: 200, headers, body: JSON.stringify({ links: links.filter(l => l && l.name).sort((a,b) => (a.name||'').localeCompare(b.name||'')) }) };
   } catch (err) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
   }
