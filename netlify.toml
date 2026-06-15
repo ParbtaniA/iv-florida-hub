@@ -16,3 +16,9 @@
 
 [functions."approve-move"]
   timeout = 20
+
+[functions."save-link"]
+  timeout = 26
+
+[functions."get-links"]
+  timeout = 20
