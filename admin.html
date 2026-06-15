@@ -206,7 +206,20 @@ async function loadPendingLinks() {
 
     const sel = (id, opts) => `<select id="${id}" style="flex:1;border:1.5px solid #E2E8F0;border-radius:6px;padding:7px 10px;font-size:12px;font-family:inherit;background:#fff;">${opts}</select>`;
 
-    list.innerHTML = links.map(l => `
+    list.innerHTML = links.map(l => {
+      // Parse suggestion from note
+      let suggestedDest = '', suggestedSection = '', suggestedLabel = '';
+      if (l.note) {
+        const regionalMatch = l.note.match(/regional section proposed:\s*(.+)/i);
+        const categoryMatch = l.note.match(/category proposed:\s*(.+)/i);
+        const customMatch   = l.note.match(/^(.+)$/i);
+        if (regionalMatch) { suggestedDest = 'regional'; suggestedSection = regionalMatch[1].trim(); suggestedLabel = `Regional Docs → "${suggestedSection}"`; }
+        else if (categoryMatch) { suggestedDest = 'center'; suggestedSection = categoryMatch[1].trim(); suggestedLabel = `New category → "${suggestedSection}"`; }
+        else if (l.customSection) { suggestedLabel = l.note; }
+      }
+      if (l.centerHint) suggestedLabel += l.centerHint ? ` (${l.centerHint})` : '';
+
+      return `
       <div class="request-card" id="lcard-${l.id}">
         <div class="request-header">
           <div class="request-filename">${l.name}</div>
@@ -215,25 +228,28 @@ async function loadPendingLinks() {
         <div class="request-meta">
           <a href="${l.url}" target="_blank" rel="noopener" style="color:#0B1F35;font-size:12px;word-break:break-all;">${l.url} ↗</a>
         </div>
-        ${l.note ? `<div class="request-reason">"${l.note}"</div>` : ''}
+        ${suggestedLabel ? `
+          <div style="margin-top:10px;padding:10px 12px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;font-size:12px;color:#1E40AF;line-height:1.5;">
+            <span style="font-weight:600;">💡 Suggested placement:</span> ${suggestedLabel}
+          </div>` : (l.note ? `<div class="request-reason">"${l.note}"</div>` : '')}
         <div style="margin-top:12px;background:#F8F9FA;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px;">
           <div style="font-size:11px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.06em;">Place this link in:</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             ${sel(`ltype-${l.id}`,
-              '<option value="">Destination…</option><option value="regional">Regional Docs</option><option value="center">Category / Center</option>'
+              `<option value="">Destination…</option><option value="regional"${suggestedDest==='regional'?' selected':''}>Regional Docs</option><option value="center"${suggestedDest==='center'?' selected':''}>Category / Center</option>`
             )}
           </div>
-          <div id="lplace-regional-${l.id}" style="display:none;display:none;flex-direction:column;gap:8px;">
+          <div id="lplace-regional-${l.id}" style="display:${suggestedDest==='regional'?'flex':'none'};flex-direction:column;gap:8px;">
             ${sel(`lsec-${l.id}`,
-              '<option value="">Section…</option><option value="SOPs">SOPs</option><option value="Driving">Driving</option><option value="Procedures">Procedures</option><option value="General">General</option><option value="__new__">+ Create new section…</option>'
+              `<option value="">Section…</option><option value="SOPs">SOPs</option><option value="Driving">Driving</option><option value="Procedures">Procedures</option><option value="General">General</option><option value="__new__"${suggestedDest==='regional'?' selected':''}>+ Create new section…</option>`
             )}
-            <input id="lsec-new-${l.id}" type="text" placeholder="New section name…" style="display:none;border:1.5px solid #F59E0B;border-radius:6px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none;width:100%;box-sizing:border-box;" />
+            <input id="lsec-new-${l.id}" type="text" placeholder="New section name…" value="${suggestedDest==='regional' ? suggestedSection : ''}" style="display:${suggestedDest==='regional'?'block':'none'};border:1.5px solid #F59E0B;border-radius:6px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none;width:100%;box-sizing:border-box;" />
           </div>
-          <div id="lplace-center-${l.id}" style="display:none;flex-direction:column;gap:8px;">
+          <div id="lplace-center-${l.id}" style="display:${suggestedDest==='center'?'flex':'none'};flex-direction:column;gap:8px;">
             ${sel(`lcat-${l.id}`,
-              '<option value="">Category…</option><option value="eop">EOP</option><option value="safety">Safety</option><option value="rec">REC</option><option value="camps">Camps</option><option value="__new__">+ Create new category…</option>'
+              `<option value="">Category…</option><option value="eop">EOP</option><option value="safety">Safety</option><option value="rec">REC</option><option value="camps">Camps</option><option value="__new__"${suggestedDest==='center'?' selected':''}>+ Create new category…</option>`
             )}
-            <input id="lcat-new-${l.id}" type="text" placeholder="New category name…" style="display:none;border:1.5px solid #F59E0B;border-radius:6px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none;width:100%;box-sizing:border-box;" />
+            <input id="lcat-new-${l.id}" type="text" placeholder="New category name…" value="${suggestedDest==='center' ? suggestedSection : ''}" style="display:${suggestedDest==='center'?'block':'none'};border:1.5px solid #F59E0B;border-radius:6px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none;width:100%;box-sizing:border-box;" />
             ${sel(`lctr-${l.id}`,
               '<option value="">Center…</option><option value="Miami">Miami</option><option value="FtLauderdale">Ft. Lauderdale</option><option value="Orlando">Orlando</option><option value="Tampa">Tampa</option><option value="Ocala">Ocala</option>'
             )}
@@ -244,7 +260,8 @@ async function loadPendingLinks() {
           <button class="btn-approve" onclick="placeLink('${l.id}', '${l.name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}', '${l.url}', this)">✓ Place &amp; Approve</button>
           <button class="btn-reject" onclick="dismissLink('${l.id}', 'rejected', this)">✕ Reject</button>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
 
     // Wire up destination selects
     links.forEach(l => {
