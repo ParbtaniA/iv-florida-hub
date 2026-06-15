@@ -476,17 +476,21 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
         <div class="upload-option-title">I know where it goes</div>
         <div class="upload-option-desc">Pick a category and center — opens that folder directly in Drive.</div>
         <div class="upload-select-row" id="upload-guided-selects" style="display:none">
-          <select id="upload-cat-sel" onchange="updateUploadCenters()">
-            <option value="">Category…</option>
-            <option value="eop">EOP</option>
-            <option value="safety">Safety</option>
-            <option value="rec">REC</option>
-            <option value="camps">Camps</option>
-          </select>
-          <select id="upload-center-sel" disabled>
-            <option value="">Center…</option>
-          </select>
-          <button class="upload-confirm-btn" id="upload-guided-btn" disabled onclick="openGuidedUpload(event)">Open ↗</button>
+          <div style="display:flex;gap:10px;">
+            <select id="upload-cat-sel" onchange="updateUploadCenters()" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
+              <option value="">Category…</option>
+              <option value="eop">EOP</option>
+              <option value="safety">Safety</option>
+              <option value="rec">REC</option>
+              <option value="camps">Camps</option>
+            </select>
+            <select id="upload-center-sel" disabled style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
+              <option value="">Center…</option>
+            </select>
+          </div>
+          <input id="upload-filename-input" type="text" placeholder="File name (optional — checks for duplicates)" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='#059669'" onblur="this.style.borderColor='var(--border)'" />
+          <div id="upload-duplicate-warning" style="display:none;background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;padding:10px 12px;font-size:12px;color:#92400E;line-height:1.6;"></div>
+          <button class="upload-confirm-btn" id="upload-guided-btn" disabled onclick="checkAndOpenGuidedUpload(event)" style="width:100%;">Check &amp; open folder ↗</button>
         </div>
       </div>
     </div>
@@ -925,6 +929,8 @@ function openUploadModal() {
   document.getElementById('upload-center-sel').disabled = true;
   document.getElementById('upload-guided-btn').disabled = true;
   document.getElementById('upload-guided-selects').style.display = 'none';
+  document.getElementById('upload-filename-input').value = '';
+  document.getElementById('upload-duplicate-warning').style.display = 'none';
   document.getElementById('upload-link-fields').style.display = 'none';
   document.getElementById('link-name-input').value = '';
   document.getElementById('link-url-input').value = '';
@@ -944,13 +950,16 @@ function closeUploadModal() {
 function toggleUploadRoute(type) {
   if (type === 'guided') {
     const el = document.getElementById('upload-guided-selects');
-    el.style.display = el.style.display === 'none' ? 'flex' : 'none';
-    document.getElementById('upload-link-fields').style.display = 'none';
+    const showing = el.style.display !== 'none';
+    el.style.display = showing ? 'none' : 'flex';
+    el.style.flexDirection = 'column';
+    if (!showing) document.getElementById('upload-link-fields').style.display = 'none';
   } else if (type === 'link') {
     const el = document.getElementById('upload-link-fields');
-    el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+    const showing = el.style.display !== 'none';
+    el.style.display = showing ? 'none' : 'flex';
     el.style.flexDirection = 'column';
-    document.getElementById('upload-guided-selects').style.display = 'none';
+    if (!showing) document.getElementById('upload-guided-selects').style.display = 'none';
   }
 }
 
@@ -964,17 +973,48 @@ function updateUploadCenters() {
     });
     sel.disabled = false;
   } else { sel.disabled = true; }
-  sel.onchange = () => { document.getElementById('upload-guided-btn').disabled = !(cat && sel.value); };
+  sel.onchange = () => {
+    document.getElementById('upload-guided-btn').disabled = !(cat && sel.value);
+    document.getElementById('upload-duplicate-warning').style.display = 'none';
+  };
   document.getElementById('upload-guided-btn').disabled = true;
+  document.getElementById('upload-duplicate-warning').style.display = 'none';
 }
 
-function openGuidedUpload(e) {
+async function checkAndOpenGuidedUpload(e) {
   if (e) e.stopPropagation();
-  const cat = document.getElementById('upload-cat-sel').value;
+  const cat    = document.getElementById('upload-cat-sel').value;
   const center = document.getElementById('upload-center-sel').value;
+  const fname  = document.getElementById('upload-filename-input').value.trim();
   const folderId = UPLOAD_FOLDERS[cat]?.[center];
   if (!folderId) return;
-  window.open(`https://drive.google.com/drive/folders/${folderId}`, '_blank');
+  const btn = document.getElementById('upload-guided-btn');
+  const warning = document.getElementById('upload-duplicate-warning');
+  warning.style.display = 'none';
+  if (fname) {
+    btn.disabled = true; btn.textContent = 'Checking…';
+    try {
+      const resp = await fetch('/.netlify/functions/check-duplicate', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ fileName: fname, folderId })
+      });
+      const data = await resp.json();
+      if (data.duplicate && data.existing?.length > 0) {
+        const ex = data.existing[0];
+        const date = ex.modified ? new Date(ex.modified).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '';
+        warning.style.display = 'block';
+        warning.innerHTML = '⚠ <strong>' + fname + '</strong> already exists in ' + UPLOAD_CENTER_LABELS[center] + ' ' + cat.toUpperCase() + '.<br><a href="' + ex.url + '" target="_blank" rel="noopener" style="color:#92400E;font-weight:600;text-decoration:underline;">' + ex.name + ' ↗</a>' + (date ? ' <span style="opacity:0.7">· ' + date + '</span>' : '') + '<br><span style="display:inline-block;margin-top:4px;">Upload a different version? <span onclick="forceOpenDrive('' + folderId + '')" style="text-decoration:underline;cursor:pointer;font-weight:600;">Upload anyway</span></span>';
+        btn.disabled = false; btn.textContent = 'Check & open folder ↗';
+        return;
+      }
+    } catch(err) { /* non-blocking */ }
+    btn.disabled = false; btn.textContent = 'Check & open folder ↗';
+  }
+  forceOpenDrive(folderId);
+}
+
+function forceOpenDrive(folderId) {
+  window.open('https://drive.google.com/drive/folders/' + folderId, '_blank');
   closeUploadModal();
 }
 
@@ -1029,16 +1069,45 @@ async function submitLink(e) {
       body: JSON.stringify(payload)
     });
     const data = await resp.json();
-    if (data.success) {
+    if (data.duplicate) {
+      // Show duplicate warning with link to existing
+      result.style.display='block'; result.style.color='#92400E';
+      result.style.background='#FEF3C7'; result.style.border='1px solid #FCD34D';
+      result.style.borderRadius='8px'; result.style.padding='10px 12px'; result.style.lineHeight='1.6';
+      result.innerHTML = `⚠ A link named <strong>${data.existing.name}</strong> already exists here.<br><a href="${data.existing.url}" target="_blank" rel="noopener" style="color:#92400E;font-weight:600;text-decoration:underline;">${data.existing.url} ↗</a><br><span style="margin-top:4px;display:inline-block;">Save anyway? <span onclick="forceSaveLink()" style="text-decoration:underline;cursor:pointer;font-weight:600;">Yes, save it</span></span>`;
+      window._pendingLinkPayload = payload;
+      btn.disabled = false; btn.textContent = 'Save link';
+    } else if (data.success) {
       result.style.display='block'; result.style.color='#059669';
+      result.style.background=''; result.style.border=''; result.style.padding='0'; result.style.borderRadius='0';
       result.textContent = dest === 'pending' ? '✓ Link submitted for admin review' : '✓ Link saved successfully';
       setTimeout(closeUploadModal, 1500);
     } else throw new Error(data.error);
   } catch(err) {
     result.style.display='block'; result.style.color='#DC2626';
+    result.style.background=''; result.style.border=''; result.style.padding='0'; result.style.borderRadius='0';
     result.textContent = 'Error: ' + err.message;
     btn.disabled = false; btn.textContent = 'Save link';
   }
+}
+
+async function forceSaveLink() {
+  if (!window._pendingLinkPayload) return;
+  const payload = { ...window._pendingLinkPayload, force: true };
+  const result = document.getElementById('link-result');
+  try {
+    const resp = await fetch('/.netlify/functions/save-link', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await resp.json();
+    if (data.success) {
+      result.style.display='block'; result.style.color='#059669';
+      result.style.background=''; result.style.border=''; result.style.padding='0'; result.style.borderRadius='0';
+      result.textContent = '✓ Link saved';
+      setTimeout(closeUploadModal, 1200);
+    }
+  } catch(err) { result.textContent = 'Error: ' + err.message; }
 }
 
 document.getElementById('upload-modal-overlay').addEventListener('click', function(e) {
