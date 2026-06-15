@@ -2,7 +2,7 @@
 // ?store=regional&section=SOPs  → regional links for that section
 // ?store=center&category=safety&center=Miami  → center links
 
-const SITE_ID = process.env.NETLIFY_SITE_ID;
+const SITE_ID = '3bfe8c7b-192d-4d4d-aa10-6aced98a037c';
 const TOKEN   = process.env.NETLIFY_BLOBS_TOKEN;
 
 async function blobList(store, prefix) {
