@@ -223,15 +223,17 @@ async function loadPendingLinks() {
               '<option value="">Destination…</option><option value="regional">Regional Docs</option><option value="center">Category / Center</option>'
             )}
           </div>
-          <div id="lplace-regional-${l.id}" style="display:none">
+          <div id="lplace-regional-${l.id}" style="display:none;display:none;flex-direction:column;gap:8px;">
             ${sel(`lsec-${l.id}`,
-              '<option value="">Section…</option><option value="SOPs">SOPs</option><option value="Driving">Driving</option><option value="Procedures">Procedures</option><option value="General">General</option>'
+              '<option value="">Section…</option><option value="SOPs">SOPs</option><option value="Driving">Driving</option><option value="Procedures">Procedures</option><option value="General">General</option><option value="__new__">+ Create new section…</option>'
             )}
+            <input id="lsec-new-${l.id}" type="text" placeholder="New section name…" style="display:none;border:1.5px solid #F59E0B;border-radius:6px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none;width:100%;box-sizing:border-box;" />
           </div>
           <div id="lplace-center-${l.id}" style="display:none;flex-direction:column;gap:8px;">
             ${sel(`lcat-${l.id}`,
-              '<option value="">Category…</option><option value="eop">EOP</option><option value="safety">Safety</option><option value="rec">REC</option><option value="camps">Camps</option>'
+              '<option value="">Category…</option><option value="eop">EOP</option><option value="safety">Safety</option><option value="rec">REC</option><option value="camps">Camps</option><option value="__new__">+ Create new category…</option>'
             )}
+            <input id="lcat-new-${l.id}" type="text" placeholder="New category name…" style="display:none;border:1.5px solid #F59E0B;border-radius:6px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none;width:100%;box-sizing:border-box;" />
             ${sel(`lctr-${l.id}`,
               '<option value="">Center…</option><option value="Miami">Miami</option><option value="FtLauderdale">Ft. Lauderdale</option><option value="Orlando">Orlando</option><option value="Tampa">Tampa</option><option value="Ocala">Ocala</option>'
             )}
@@ -247,9 +249,17 @@ async function loadPendingLinks() {
     // Wire up destination selects
     links.forEach(l => {
       document.getElementById(`ltype-${l.id}`).addEventListener('change', function() {
-        document.getElementById(`lplace-regional-${l.id}`).style.display = this.value === 'regional' ? 'block' : 'none';
+        const reg = document.getElementById(`lplace-regional-${l.id}`);
+        reg.style.display = this.value === 'regional' ? 'flex' : 'none';
+        reg.style.flexDirection = 'column';
         const cc = document.getElementById(`lplace-center-${l.id}`);
         cc.style.display = this.value === 'center' ? 'flex' : 'none';
+      });
+      document.getElementById(`lsec-${l.id}`).addEventListener('change', function() {
+        document.getElementById(`lsec-new-${l.id}`).style.display = this.value === '__new__' ? 'block' : 'none';
+      });
+      document.getElementById(`lcat-${l.id}`).addEventListener('change', function() {
+        document.getElementById(`lcat-new-${l.id}`).style.display = this.value === '__new__' ? 'block' : 'none';
       });
     });
 
@@ -264,19 +274,27 @@ async function placeLink(linkId, name, url, btn) {
   msg.style.display = 'none';
 
   const dest = document.getElementById('ltype-' + linkId)?.value;
-  const section = document.getElementById('lsec-' + linkId)?.value;
-  const category = document.getElementById('lcat-' + linkId)?.value;
+  const sectionSel = document.getElementById('lsec-' + linkId)?.value;
+  const sectionNew = document.getElementById('lsec-new-' + linkId)?.value.trim();
+  const section = sectionSel === '__new__' ? sectionNew : sectionSel;
+
+  const catSel = document.getElementById('lcat-' + linkId)?.value;
+  const catNew = document.getElementById('lcat-new-' + linkId)?.value.trim();
+  const category = catSel === '__new__' ? catNew : catSel;
   const center = document.getElementById('lctr-' + linkId)?.value;
 
-  if (!dest || (dest === 'regional' && !section) || (dest === 'center' && (!category || !center))) {
-    msg.style.display = 'block'; return;
+  if (!dest
+    || (dest === 'regional' && !section)
+    || (dest === 'center' && (!category || !center))) {
+    msg.style.display = 'block';
+    msg.textContent = 'Please fill in all required fields.';
+    return;
   }
 
   btn.disabled = true; btn.textContent = 'Placing…';
   card.querySelectorAll('button').forEach(b => b.disabled = true);
 
   try {
-    // Save link to correct location
     const payload = { name, url, destination: dest, force: true };
     if (dest === 'regional') payload.section = section;
     if (dest === 'center') { payload.category = category; payload.center = center; }
@@ -289,8 +307,7 @@ async function placeLink(linkId, name, url, btn) {
     const saveData = await saveResp.json();
     if (!saveData.success) throw new Error(saveData.error || 'Save failed');
 
-    // Delete from pending
-    const delResp = await fetch('/.netlify/functions/delete-link', {
+    await fetch('/.netlify/functions/delete-link', {
       method: 'POST', credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ linkId, store: 'links-pending' })
