@@ -221,7 +221,11 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
 .sort-dest { font-family: 'DM Mono', monospace; font-size: 11px; opacity: 0.7; margin-left: auto; white-space: nowrap; flex-shrink: 0; }
 .sort-modal-footer { display: flex; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
 .sort-empty { text-align: center; padding: 20px 0; font-size: 14px; color: var(--text-secondary); }
-/* Upload modal */
+.nav-item[data-tab="regional"] .nav-code { color: #22D3EE; background: rgba(34,211,238,0.15); }
+.nav-item.active[data-tab="regional"] .nav-code { background: rgba(34,211,238,0.25); }
+.file-icon.link { background: #EFF6FF; }
+.drawer-section-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-hint); padding: 12px 0 6px; }
+</style>
 .upload-modal-overlay { position: fixed; inset: 0; background: rgba(11,31,53,0.5); z-index: 300; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
 .upload-modal-overlay.open { opacity: 1; pointer-events: all; }
 .upload-modal { background: #fff; border-radius: 16px; padding: 28px; width: 460px; max-width: calc(100vw - 40px); box-shadow: 0 20px 60px rgba(11,31,53,0.2); }
@@ -278,6 +282,10 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
     <div class="nav-label">Navigation</div>
     <a class="nav-item active" data-tab="home" onclick="switchTab('home', this)">
       <span class="nav-code">HOM</span><span class="nav-title">Home</span>
+    </a>
+    <div class="nav-label" style="padding-top:8px;">Regional</div>
+    <a class="nav-item" data-tab="regional" onclick="switchTab('regional', this)">
+      <span class="nav-code">REG</span><span class="nav-title">Regional Docs</span>
     </a>
     <div class="nav-label" style="padding-top:8px;">Categories</div>
     <a class="nav-item" data-tab="eop" onclick="switchTab('eop', this)">
@@ -436,6 +444,21 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
       </div>
     </div>
 
+    <!-- REGIONAL DOCS PAGE -->
+    <div class="category-page" id="page-regional">
+      <div class="cat-hero">
+        <div class="cat-hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+        <div><div class="cat-hero-code">REG</div><div class="cat-hero-name">Regional Docs</div><div class="cat-hero-desc">Resources that apply across all centers and verticals</div></div>
+        <div class="cat-hero-pill">4 sections</div>
+      </div>
+      <div class="center-grid">
+        <div class="center-card" onclick="openRegionalDrawer('SOPs','1L0gp1dpslHnvaak9opm5O0WoshnG__Bq')"><div class="card-top"><div class="card-initial" style="font-size:9px">SOP</div><div class="card-dot"></div></div><div class="card-name">SOPs</div><div class="card-label">Standard operating procedures</div><div class="card-action">Browse <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openRegionalDrawer('Driving','1ZknNuK6I-v8OmVcRgrnzdTLcEraOW18M')"><div class="card-top"><div class="card-initial" style="font-size:9px">DRV</div><div class="card-dot"></div></div><div class="card-name">Driving</div><div class="card-label">Vehicle & driving resources</div><div class="card-action">Browse <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openRegionalDrawer('Procedures','1S29MKkoGHplOetWjWzbzD_4xZl7alsrM')"><div class="card-top"><div class="card-initial" style="font-size:9px">PRO</div><div class="card-dot"></div></div><div class="card-name">Procedures</div><div class="card-label">General procedures & guidelines</div><div class="card-action">Browse <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+        <div class="center-card" onclick="openRegionalDrawer('General','15kaTbNoa1XT2ViYqcnpepTIla9YDTZ8f')"><div class="card-top"><div class="card-initial" style="font-size:9px">GEN</div><div class="card-dot"></div></div><div class="card-name">General</div><div class="card-label">Other regional resources</div><div class="card-action">Browse <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -443,7 +466,7 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
 <div class="upload-modal-overlay" id="upload-modal-overlay">
   <div class="upload-modal">
     <h3>Upload files</h3>
-    <div class="upload-modal-sub">Where would you like to upload? If you know the category and center, choose the first option. Otherwise drop it in Dump and the admin will sort it.</div>
+    <div class="upload-modal-sub">Choose how you'd like to contribute. Files go to Google Drive; links are stored and appear in the relevant drawer.</div>
 
     <div class="upload-option" onclick="toggleUploadRoute('guided')">
       <div class="upload-option-icon green">
@@ -451,19 +474,19 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
       </div>
       <div style="flex:1">
         <div class="upload-option-title">I know where it goes</div>
-        <div class="upload-option-desc">Pick a category and center — your file will go to that folder and the admin will be notified to approve placement.</div>
+        <div class="upload-option-desc">Pick a category and center — opens that folder directly in Drive.</div>
         <div class="upload-select-row" id="upload-guided-selects" style="display:none">
           <select id="upload-cat-sel" onchange="updateUploadCenters()">
             <option value="">Category…</option>
-            <option value="eop">EOP — Emergency Procedures</option>
+            <option value="eop">EOP</option>
             <option value="safety">Safety</option>
-            <option value="rec">REC — Religious Education</option>
+            <option value="rec">REC</option>
             <option value="camps">Camps</option>
           </select>
           <select id="upload-center-sel" disabled>
             <option value="">Center…</option>
           </select>
-          <button class="upload-confirm-btn" id="upload-guided-btn" disabled onclick="openGuidedUpload()">Open folder ↗</button>
+          <button class="upload-confirm-btn" id="upload-guided-btn" disabled onclick="openGuidedUpload(event)">Open ↗</button>
         </div>
       </div>
     </div>
@@ -474,7 +497,49 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
       </div>
       <div>
         <div class="upload-option-title">Not sure — let admin sort it</div>
-        <div class="upload-option-desc">Drops the file in the Dump folder. The admin will classify and move it to the right place.</div>
+        <div class="upload-option-desc">Drops into Dump. Admin will classify and move it.</div>
+      </div>
+    </div>
+
+    <div class="upload-option" id="link-option" onclick="toggleUploadRoute('link')">
+      <div class="upload-option-icon" style="background:rgba(34,211,238,0.12)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0891B2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      </div>
+      <div style="flex:1">
+        <div class="upload-option-title">Add a link</div>
+        <div class="upload-option-desc">Save a URL as a resource — appears in the relevant drawer alongside files.</div>
+        <div id="upload-link-fields" style="display:none;margin-top:14px;display:none;flex-direction:column;gap:10px;">
+          <input id="link-name-input" type="text" placeholder="Link name (e.g. ISNA Volunteer Guidelines)" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='#0B1F35'" onblur="this.style.borderColor='var(--border)'" />
+          <input id="link-url-input" type="url" placeholder="https://…" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='#0B1F35'" onblur="this.style.borderColor='var(--border)'" />
+          <select id="link-dest-select" onchange="updateLinkDestFields()" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
+            <option value="">Where does this link belong?</option>
+            <option value="regional">Regional Docs (applies to all centers)</option>
+            <option value="center">Specific category &amp; center</option>
+          </select>
+          <div id="link-regional-fields" style="display:none">
+            <select id="link-section-select" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
+              <option value="">Section…</option>
+              <option value="SOPs">SOPs</option>
+              <option value="Driving">Driving</option>
+              <option value="Procedures">Procedures</option>
+              <option value="General">General</option>
+            </select>
+          </div>
+          <div id="link-center-fields" style="display:none;gap:10px;flex-direction:column">
+            <select id="link-cat-select" onchange="updateLinkCenters()" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
+              <option value="">Category…</option>
+              <option value="eop">EOP</option>
+              <option value="safety">Safety</option>
+              <option value="rec">REC</option>
+              <option value="camps">Camps</option>
+            </select>
+            <select id="link-center-select" disabled style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
+              <option value="">Center…</option>
+            </select>
+          </div>
+          <button class="upload-confirm-btn" id="link-submit-btn" onclick="submitLink(event)" style="width:100%;">Save link</button>
+          <div id="link-result" style="font-size:12px;text-align:center;display:none"></div>
+        </div>
       </div>
     </div>
 
@@ -538,11 +603,12 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
 
 <script>
 const TABS = {
-  home:   { bg:'#F5F3EF', accent:'#01DC82', muted:'rgba(1,220,130,0.10)', badgeText:'#0B5E38', initial:'#EDF4F0', stripe:'#01DC82', title:'Welcome', meta:'IV Florida Regional Document Hub', badge:'HOME' },
-  eop:    { bg:'#FFFBEB', accent:'#F59E0B', muted:'rgba(245,158,11,0.10)', badgeText:'#92400E', initial:'#FEF9EC', stripe:'#F59E0B', title:'Emergency Operating Procedures', meta:'Select a center to browse documents', badge:'EOP' },
-  safety: { bg:'#FFF5F5', accent:'#F87171', muted:'rgba(248,113,113,0.10)', badgeText:'#991B1B', initial:'#FFF0F0', stripe:'#F87171', title:'Safety', meta:'Select a center to browse documents', badge:'SAF' },
-  rec:    { bg:'#F0FDF9', accent:'#34D399', muted:'rgba(52,211,153,0.10)', badgeText:'#065F46', initial:'#ECFDF5', stripe:'#34D399', title:'Religious Education Center', meta:'Select a center to browse documents', badge:'REC' },
-  camps:  { bg:'#F5F3FF', accent:'#818CF8', muted:'rgba(129,140,248,0.10)', badgeText:'#3730A3', initial:'#EEF2FF', stripe:'#818CF8', title:'Camps', meta:'Select a center to browse documents', badge:'CMP' }
+  home:     { bg:'#F5F3EF', accent:'#01DC82', muted:'rgba(1,220,130,0.10)', badgeText:'#0B5E38', initial:'#EDF4F0', stripe:'#01DC82', title:'Welcome', meta:'IV Florida Regional Document Hub', badge:'HOME' },
+  regional: { bg:'#ECFEFF', accent:'#22D3EE', muted:'rgba(34,211,238,0.10)', badgeText:'#155E75', initial:'#CFFAFE', stripe:'#22D3EE', title:'Regional Docs', meta:'Resources across all centers and verticals', badge:'REG' },
+  eop:      { bg:'#FFFBEB', accent:'#F59E0B', muted:'rgba(245,158,11,0.10)', badgeText:'#92400E', initial:'#FEF9EC', stripe:'#F59E0B', title:'Emergency Operating Procedures', meta:'Select a center to browse documents', badge:'EOP' },
+  safety:   { bg:'#FFF5F5', accent:'#F87171', muted:'rgba(248,113,113,0.10)', badgeText:'#991B1B', initial:'#FFF0F0', stripe:'#F87171', title:'Safety', meta:'Select a center to browse documents', badge:'SAF' },
+  rec:      { bg:'#F0FDF9', accent:'#34D399', muted:'rgba(52,211,153,0.10)', badgeText:'#065F46', initial:'#ECFDF5', stripe:'#34D399', title:'Religious Education Center', meta:'Select a center to browse documents', badge:'REC' },
+  camps:    { bg:'#F5F3FF', accent:'#818CF8', muted:'rgba(129,140,248,0.10)', badgeText:'#3730A3', initial:'#EEF2FF', stripe:'#818CF8', title:'Camps', meta:'Select a center to browse documents', badge:'CMP' }
 };
 
 let currentTab = 'home';
@@ -770,6 +836,80 @@ async function submitMoveRequest() {
   }
 }
 
+// ── Regional drawer ──
+async function openRegionalDrawer(section, folderId) {
+  drawerStack = [{ folderId, label: section, driveLink: `https://drive.google.com/drive/folders/${folderId}` }];
+  document.getElementById('drawer-title').textContent = `Regional — ${section}`;
+  document.getElementById('drawer-subtitle').textContent = `REG · ${section}`;
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('drawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderBreadcrumb();
+  await loadRegionalFolder(folderId, section);
+}
+
+async function loadRegionalFolder(folderId, section) {
+  const body = document.getElementById('drawer-body');
+  body.innerHTML = '<div class="drawer-loading"><div class="spinner"></div><span style="font-size:13px;color:var(--text-hint)">Loading…</span></div>';
+  try {
+    // Load Drive files and Blobs links in parallel
+    const [driveResp, linksResp] = await Promise.all([
+      fetch(`/.netlify/functions/drive?folderId=${folderId}`).then(r => r.json()),
+      fetch(`/.netlify/functions/get-links?store=regional&section=${encodeURIComponent(section)}`).then(r => r.json())
+    ]);
+
+    const files = driveResp.files || [];
+    const links = linksResp.links || [];
+    const driveLink = `https://drive.google.com/drive/folders/${folderId}`;
+
+    if (files.length === 0 && links.length === 0) {
+      body.innerHTML = `<div class="drawer-empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><p>No resources yet</p></div><div class="drawer-open-drive"><a href="${driveLink}" target="_blank" rel="noopener">Open in Google Drive ↗</a></div>`;
+      return;
+    }
+
+    let html = '<div class="file-list">';
+
+    if (files.length > 0) {
+      html += `<div class="drawer-section-label">Files</div>`;
+      html += files.map(f => {
+        const icon = FILE_ICONS[f.type] || FILE_ICONS.file;
+        const modified = f.modified ? new Date(f.modified).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '';
+        if (f.isFolder) return `<div class="file-item" onclick="drillIntoFolder('${f.id}','${f.name.replace(/'/g,"\\'")}')" style="cursor:pointer"><div class="file-icon folder">${icon}</div><div class="file-name">${f.name}</div><div class="file-meta">${modified}</div><svg class="file-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></div>`;
+        const safe = f.name.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+        return `<div class="file-item"><a href="${f.viewLink}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;flex:1;text-decoration:none;color:inherit;min-width:0;overflow:hidden;"><div class="file-icon ${f.type}" style="flex-shrink:0">${icon}</div><div class="file-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.name}</div><div class="file-meta" style="flex-shrink:0">${modified}</div></a><button class="file-move-btn" onclick="openMoveModal('${f.id}','${safe}','${folderId}')">Move</button></div>`;
+      }).join('');
+    }
+
+    if (links.length > 0) {
+      html += `<div class="drawer-section-label" style="margin-top:${files.length ? '8px' : '0'}">Links</div>`;
+      html += links.map(l => `
+        <a class="link-item" href="${l.url}" target="_blank" rel="noopener">
+          <div class="file-icon link" style="flex-shrink:0">🔗</div>
+          <div class="file-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.name}</div>
+          <svg class="file-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>`).join('');
+    }
+
+    html += '</div>';
+    html += `<div class="drawer-open-drive"><a href="${driveLink}" target="_blank" rel="noopener">Open folder in Google Drive ↗</a></div>`;
+    body.innerHTML = html;
+  } catch(err) {
+    body.innerHTML = `<div class="drawer-empty"><p style="color:var(--text-hint)">Could not load resources.</p></div>`;
+  }
+}
+
+// Also patch loadFolder to show links for center drawers
+const _origLoadFolder = loadFolder;
+async function loadFolderWithLinks(folderId) {
+  // Run original load — it renders files
+  // Then append links below
+  await _origLoadFolder(folderId);
+  // Find category + center from drawer stack
+  if (drawerStack.length !== 1) return; // only on root folder, not subfolders
+  // We don't have category/center info here — skip for now, links in center drawers
+  // will be added in a future enhancement
+}
+
 // ── Upload modal ──
 const UPLOAD_FOLDERS = {
   eop:    { Miami:'1jVrTx0C9iEmNrNKBR9jBRIfRhlh1DyAD', FtLauderdale:'1gpcSGPhQYSw2IqJJuJxIM6L5i7OaTJ45', Orlando:'1MG8GQlyr1GtW0qY2naY7TRruGMGsU2cW', Tampa:'1D_7igH1-S-p0bATOhG0b3ii51tZg2HRR', Ocala:'1vfoo5356GfC68lDdeiVffT9NNaKJ4Rry' },
@@ -780,12 +920,18 @@ const UPLOAD_FOLDERS = {
 const UPLOAD_CENTER_LABELS = { Miami:'Miami', FtLauderdale:'Ft. Lauderdale', Orlando:'Orlando', Tampa:'Tampa', Ocala:'Ocala' };
 
 function openUploadModal() {
-  // Reset state
   document.getElementById('upload-cat-sel').value = '';
   document.getElementById('upload-center-sel').value = '';
   document.getElementById('upload-center-sel').disabled = true;
   document.getElementById('upload-guided-btn').disabled = true;
   document.getElementById('upload-guided-selects').style.display = 'none';
+  document.getElementById('upload-link-fields').style.display = 'none';
+  document.getElementById('link-name-input').value = '';
+  document.getElementById('link-url-input').value = '';
+  document.getElementById('link-dest-select').value = '';
+  document.getElementById('link-regional-fields').style.display = 'none';
+  document.getElementById('link-center-fields').style.display = 'none';
+  document.getElementById('link-result').style.display = 'none';
   document.getElementById('upload-modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -799,6 +945,12 @@ function toggleUploadRoute(type) {
   if (type === 'guided') {
     const el = document.getElementById('upload-guided-selects');
     el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+    document.getElementById('upload-link-fields').style.display = 'none';
+  } else if (type === 'link') {
+    const el = document.getElementById('upload-link-fields');
+    el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+    el.style.flexDirection = 'column';
+    document.getElementById('upload-guided-selects').style.display = 'none';
   }
 }
 
@@ -808,17 +960,11 @@ function updateUploadCenters() {
   sel.innerHTML = '<option value="">Center…</option>';
   if (cat) {
     Object.entries(UPLOAD_CENTER_LABELS).forEach(([key, label]) => {
-      const opt = document.createElement('option');
-      opt.value = key; opt.textContent = label;
-      sel.appendChild(opt);
+      const opt = document.createElement('option'); opt.value = key; opt.textContent = label; sel.appendChild(opt);
     });
     sel.disabled = false;
-  } else {
-    sel.disabled = true;
-  }
-  sel.onchange = () => {
-    document.getElementById('upload-guided-btn').disabled = !(cat && sel.value);
-  };
+  } else { sel.disabled = true; }
+  sel.onchange = () => { document.getElementById('upload-guided-btn').disabled = !(cat && sel.value); };
   document.getElementById('upload-guided-btn').disabled = true;
 }
 
@@ -835,6 +981,64 @@ function openGuidedUpload(e) {
 function openDumpUpload() {
   window.open('https://drive.google.com/drive/folders/1T3ADK73rj5CizyVIZ6popjiYjgFUZAqY', '_blank');
   closeUploadModal();
+}
+
+function updateLinkDestFields() {
+  const dest = document.getElementById('link-dest-select').value;
+  document.getElementById('link-regional-fields').style.display = dest === 'regional' ? 'block' : 'none';
+  const cf = document.getElementById('link-center-fields');
+  cf.style.display = dest === 'center' ? 'flex' : 'none';
+  cf.style.flexDirection = 'column';
+}
+
+function updateLinkCenters() {
+  const cat = document.getElementById('link-cat-select').value;
+  const sel = document.getElementById('link-center-select');
+  sel.innerHTML = '<option value="">Center…</option>';
+  if (cat) {
+    Object.entries(UPLOAD_CENTER_LABELS).forEach(([key, label]) => {
+      const opt = document.createElement('option'); opt.value = key; opt.textContent = label; sel.appendChild(opt);
+    });
+    sel.disabled = false;
+  } else { sel.disabled = true; }
+}
+
+async function submitLink(e) {
+  if (e) e.stopPropagation();
+  const name = document.getElementById('link-name-input').value.trim();
+  const url  = document.getElementById('link-url-input').value.trim();
+  const dest = document.getElementById('link-dest-select').value;
+  const result = document.getElementById('link-result');
+
+  if (!name || !url) { result.style.display='block'; result.style.color='#DC2626'; result.textContent='Please enter a name and URL.'; return; }
+  if (!url.startsWith('http')) { result.style.display='block'; result.style.color='#DC2626'; result.textContent='URL must start with http:// or https://'; return; }
+
+  const btn = document.getElementById('link-submit-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const payload = { name, url, destination: dest || 'pending' };
+  if (dest === 'regional') payload.section = document.getElementById('link-section-select').value || 'General';
+  if (dest === 'center') {
+    payload.category = document.getElementById('link-cat-select').value;
+    payload.center   = document.getElementById('link-center-select').value;
+  }
+
+  try {
+    const resp = await fetch('/.netlify/functions/save-link', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await resp.json();
+    if (data.success) {
+      result.style.display='block'; result.style.color='#059669';
+      result.textContent = dest === 'pending' ? '✓ Link submitted for admin review' : '✓ Link saved successfully';
+      setTimeout(closeUploadModal, 1500);
+    } else throw new Error(data.error);
+  } catch(err) {
+    result.style.display='block'; result.style.color='#DC2626';
+    result.textContent = 'Error: ' + err.message;
+    btn.disabled = false; btn.textContent = 'Save link';
+  }
 }
 
 document.getElementById('upload-modal-overlay').addEventListener('click', function(e) {
