@@ -1,8 +1,5 @@
-// delete-link.js — removes a link from any Blobs store (admin only)
 const { createHmac } = require('crypto');
-
-const SITE_ID = '3bfe8c7b-192d-4d4d-aa10-6aced98a037c';
-const TOKEN   = process.env.NETLIFY_BLOBS_TOKEN;
+const { getStore } = require('@netlify/blobs');
 
 function verifyAdmin(cookie) {
   if (!cookie) return null;
@@ -27,22 +24,14 @@ exports.handler = async (event) => {
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
   }
 
-  const { linkId, store } = JSON.parse(event.body || '{}');
-  if (!linkId || !store) return { statusCode: 400, headers, body: JSON.stringify({ error: 'linkId and store required' }) };
+  const { linkId, store: storeName } = JSON.parse(event.body || '{}');
+  if (!linkId || !storeName) return { statusCode: 400, headers, body: JSON.stringify({ error: 'linkId and store required' }) };
 
-  // Find the blob key by listing the store and matching linkId in the key
-  const listResp = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}`, {
-    headers: { Authorization: `Bearer ${TOKEN}` }
-  });
-  if (!listResp.ok) return { statusCode: 500, headers, body: JSON.stringify({ error: 'Could not list store' }) };
-
-  const { blobs = [] } = await listResp.json();
-  const match = blobs.find(b => decodeURIComponent(b.key).includes(linkId));
+  const store = getStore({ name: storeName, consistency: 'strong' });
+  const { blobs = [] } = await store.list();
+  const match = blobs.find(b => b.key.includes(linkId));
   if (!match) return { statusCode: 404, headers, body: JSON.stringify({ error: 'Link not found' }) };
 
-  const delResp = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}/${match.key}`, {
-    method: 'DELETE', headers: { Authorization: `Bearer ${TOKEN}` }
-  });
-
-  return { statusCode: 200, headers, body: JSON.stringify({ success: delResp.ok || delResp.status === 204 }) };
+  await store.delete(match.key);
+  return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
 };
