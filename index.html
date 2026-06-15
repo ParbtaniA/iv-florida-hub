@@ -1001,8 +1001,13 @@ async function checkAndOpenGuidedUpload(e) {
       if (data.duplicate && data.existing?.length > 0) {
         const ex = data.existing[0];
         const date = ex.modified ? new Date(ex.modified).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '';
+        window._pendingFolderId = folderId;
         warning.style.display = 'block';
-        warning.innerHTML = '⚠ <strong>' + fname + '</strong> already exists in ' + UPLOAD_CENTER_LABELS[center] + ' ' + cat.toUpperCase() + '.<br><a href="' + ex.url + '" target="_blank" rel="noopener" style="color:#92400E;font-weight:600;text-decoration:underline;">' + ex.name + ' ↗</a>' + (date ? ' <span style="opacity:0.7">· ' + date + '</span>' : '') + '<br><span style="display:inline-block;margin-top:4px;">Upload a different version? <span onclick="forceOpenDrive('' + folderId + '')" style="text-decoration:underline;cursor:pointer;font-weight:600;">Upload anyway</span></span>';
+        warning.innerHTML = '<strong>⚠ ' + fname + '</strong> already exists in ' + (UPLOAD_CENTER_LABELS[center]||center) + ' ' + cat.toUpperCase() + '.<br>'
+          + '<a href="' + ex.url + '" target="_blank" rel="noopener" style="color:#92400E;font-weight:600;text-decoration:underline;">' + ex.name + ' ↗</a>'
+          + (date ? ' <span style="opacity:0.7">· ' + date + '</span>' : '')
+          + '<br><span style="display:inline-block;margin-top:4px;">Upload a different version? '
+          + '<span onclick="forceOpenDrive(window._pendingFolderId)" style="text-decoration:underline;cursor:pointer;font-weight:600;">Upload anyway</span></span>';
         btn.disabled = false; btn.textContent = 'Check & open folder ↗';
         return;
       }
