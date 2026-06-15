@@ -10,8 +10,7 @@ async function blobSet(store, key, value) {
   if (!r.ok) throw new Error('Blob write failed: ' + await r.text());
 }
 
-// Lightweight duplicate check — list only, no individual fetches
-// Just checks key names for matching section/location prefix + name match
+// Only fetch blobs within the same location prefix — fast
 async function quickDupeCheck(store, keyPrefix, name, url) {
   try {
     const r = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}`, {
@@ -19,9 +18,7 @@ async function quickDupeCheck(store, keyPrefix, name, url) {
     });
     if (!r.ok) return null;
     const { blobs = [] } = await r.json();
-    // Filter to same location prefix
     const matching = blobs.filter(b => decodeURIComponent(b.key).startsWith(keyPrefix));
-    // Fetch only matching ones — usually 0–5, not the whole store
     for (const b of matching) {
       const gr = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}/${b.key}`, {
         headers: { Authorization: `Bearer ${TOKEN}` }
@@ -31,7 +28,7 @@ async function quickDupeCheck(store, keyPrefix, name, url) {
       if (item.name?.toLowerCase() === name?.toLowerCase() || item.url === url) return item;
     }
     return null;
-  } catch { return null; } // non-blocking — skip dupe check on error
+  } catch { return null; }
 }
 
 exports.handler = async (event) => {
@@ -40,13 +37,16 @@ exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: '{}' };
 
   try {
-    const { name, url, destination, category, center, section, force } = JSON.parse(event.body);
+    const { name, url, destination, category, center, section, force, note, customSection, centerHint } = JSON.parse(event.body);
     if (!name || !url) return { statusCode: 400, headers, body: JSON.stringify({ error: 'name and url required' }) };
 
     const id = `link_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
     const link = { id, name, url, createdAt: new Date().toISOString() };
+    if (note) link.note = note;
+    if (customSection) link.customSection = true;
+    if (centerHint) link.centerHint = centerHint;
 
-    if (destination === 'regional' && section) {
+    if (destination === 'regional' && section && !customSection) {
       if (!force) {
         const existing = await quickDupeCheck('links-regional', `${section}:`, name, url);
         if (existing) return { statusCode: 200, headers, body: JSON.stringify({ duplicate: true, existing: { name: existing.name, url: existing.url } }) };
@@ -54,7 +54,7 @@ exports.handler = async (event) => {
       link.destination = 'regional'; link.section = section;
       await blobSet('links-regional', `${section}:${id}`, link);
 
-    } else if (destination === 'center' && category && center) {
+    } else if (destination === 'center' && category && center && !customSection) {
       if (!force) {
         const existing = await quickDupeCheck('links-center', `${category}:${center}:`, name, url);
         if (existing) return { statusCode: 200, headers, body: JSON.stringify({ duplicate: true, existing: { name: existing.name, url: existing.url } }) };
@@ -63,6 +63,7 @@ exports.handler = async (event) => {
       await blobSet('links-center', `${category}:${center}:${id}`, link);
 
     } else {
+      // Pending — custom section, unknown destination, or explicitly pending
       link.destination = 'pending';
       await blobSet('links-pending', id, link);
     }
