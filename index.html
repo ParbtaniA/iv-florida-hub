@@ -982,7 +982,38 @@ const UPLOAD_FOLDERS = {
 const UPLOAD_CENTER_LABELS = { Miami:'Miami', FtLauderdale:'Ft. Lauderdale', Orlando:'Orlando', Tampa:'Tampa', Ocala:'Ocala' };
 const UPLOAD_REGIONAL_LABELS = { SOPs:'SOPs', Driving:'Driving', Procedures:'Procedures', General:'General' };
 
+const BASE_REGIONAL_SECTIONS = ['SOPs', 'Driving', 'Procedures', 'General'];
+
+async function populateRegionalSections() {
+  // Fetch custom sections from Blobs
+  let customSections = [];
+  try {
+    const r = await fetch('/.netlify/functions/get-regional-sections');
+    if (r.ok) { const d = await r.json(); customSections = d.sections || []; }
+  } catch {}
+
+  // Merge: base sections first, then custom ones not already in base
+  const all = [...BASE_REGIONAL_SECTIONS, ...customSections.filter(s => !BASE_REGIONAL_SECTIONS.includes(s))];
+
+  // Update link section select
+  const sel = document.getElementById('link-section-select');
+  if (sel) {
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">Section…</option>'
+      + all.map(s => `<option value="${s}">${s}</option>`).join('')
+      + '<option value="__custom__">+ Create new section…</option>';
+    if (prev) sel.value = prev;
+  }
+
+  // Update upload regional section select (center-sel when regional is chosen)
+  // Also update UPLOAD_REGIONAL_LABELS with custom sections
+  customSections.filter(s => !BASE_REGIONAL_SECTIONS.includes(s)).forEach(s => {
+    UPLOAD_REGIONAL_LABELS[s] = s;
+  });
+}
+
 function openUploadModal() {
+  populateRegionalSections(); // refresh custom sections each time modal opens
   document.getElementById('upload-cat-sel').value = '';
   document.getElementById('upload-center-sel').value = '';
   document.getElementById('upload-center-sel').disabled = true;
@@ -1169,6 +1200,7 @@ function openDumpUpload() {
 function updateLinkDestFields() {
   const dest = document.getElementById('link-dest-select').value;
   document.getElementById('link-regional-fields').style.display = dest === 'regional' ? 'block' : 'none';
+  if (dest === 'regional') populateRegionalSections();
   const cf = document.getElementById('link-center-fields');
   cf.style.display = dest === 'center' ? 'flex' : 'none';
   cf.style.flexDirection = 'column';
