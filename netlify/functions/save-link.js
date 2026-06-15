@@ -1,22 +1,6 @@
 const SITE_ID = '3bfe8c7b-192d-4d4d-aa10-6aced98a037c';
 const TOKEN   = process.env.NETLIFY_BLOBS_TOKEN;
 
-async function blobListAll(store) {
-  const r = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}`, {
-    headers: { Authorization: `Bearer ${TOKEN}` }
-  });
-  if (!r.ok) return [];
-  return (await r.json()).blobs || [];
-}
-
-async function blobGet(store, key) {
-  const r = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}/${key}`, {
-    headers: { Authorization: `Bearer ${TOKEN}` }
-  });
-  if (!r.ok) return null;
-  return r.json();
-}
-
 async function blobSet(store, key, value) {
   const r = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}/${encodeURIComponent(key)}`, {
     method: 'PUT',
@@ -26,18 +10,28 @@ async function blobSet(store, key, value) {
   if (!r.ok) throw new Error('Blob write failed: ' + await r.text());
 }
 
-async function findDuplicate(store, name, url, keyPrefix) {
-  const all = await blobListAll(store);
-  for (const b of all) {
-    const decodedKey = decodeURIComponent(b.key);
-    if (!decodedKey.startsWith(keyPrefix)) continue;
-    const item = await blobGet(store, b.key);
-    if (!item) continue;
-    if (item.name?.toLowerCase() === name?.toLowerCase() || item.url === url) {
-      return item;
+// Lightweight duplicate check — list only, no individual fetches
+// Just checks key names for matching section/location prefix + name match
+async function quickDupeCheck(store, keyPrefix, name, url) {
+  try {
+    const r = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}`, {
+      headers: { Authorization: `Bearer ${TOKEN}` }
+    });
+    if (!r.ok) return null;
+    const { blobs = [] } = await r.json();
+    // Filter to same location prefix
+    const matching = blobs.filter(b => decodeURIComponent(b.key).startsWith(keyPrefix));
+    // Fetch only matching ones — usually 0–5, not the whole store
+    for (const b of matching) {
+      const gr = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}/${b.key}`, {
+        headers: { Authorization: `Bearer ${TOKEN}` }
+      });
+      if (!gr.ok) continue;
+      const item = await gr.json();
+      if (item.name?.toLowerCase() === name?.toLowerCase() || item.url === url) return item;
     }
-  }
-  return null;
+    return null;
+  } catch { return null; } // non-blocking — skip dupe check on error
 }
 
 exports.handler = async (event) => {
@@ -54,7 +48,7 @@ exports.handler = async (event) => {
 
     if (destination === 'regional' && section) {
       if (!force) {
-        const existing = await findDuplicate('links-regional', name, url, `${section}:`);
+        const existing = await quickDupeCheck('links-regional', `${section}:`, name, url);
         if (existing) return { statusCode: 200, headers, body: JSON.stringify({ duplicate: true, existing: { name: existing.name, url: existing.url } }) };
       }
       link.destination = 'regional'; link.section = section;
@@ -62,7 +56,7 @@ exports.handler = async (event) => {
 
     } else if (destination === 'center' && category && center) {
       if (!force) {
-        const existing = await findDuplicate('links-center', name, url, `${category}:${center}:`);
+        const existing = await quickDupeCheck('links-center', `${category}:${center}:`, name, url);
         if (existing) return { statusCode: 200, headers, body: JSON.stringify({ duplicate: true, existing: { name: existing.name, url: existing.url } }) };
       }
       link.destination = 'center'; link.category = category; link.center = center;
