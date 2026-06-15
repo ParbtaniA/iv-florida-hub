@@ -484,12 +484,15 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
               <option value="safety">Safety</option>
               <option value="rec">REC</option>
               <option value="camps">Camps</option>
+              <option value="__custom__">+ New section (admin review)</option>
             </select>
             <select id="upload-center-sel" disabled style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
               <option value="">Center…</option>
             </select>
           </div>
           <input id="upload-filename-input" type="text" placeholder="File name (optional — checks for duplicates)" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='#059669'" onblur="this.style.borderColor='var(--border)'" />
+          <input id="upload-custom-section-input" type="text" placeholder="Describe where this file belongs (e.g. 'Volunteer Onboarding')" style="display:none;width:100%;border:1.5px solid #F59E0B;border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='#D97706'" onblur="this.style.borderColor='#F59E0B'" />
+          <div id="upload-custom-note" style="display:none;font-size:11px;color:#92400E;background:#FEF9EC;border-radius:6px;padding:8px 10px;">📋 This will be sent to the admin for review before the file is placed.</div>
           <div id="upload-duplicate-warning" style="display:none;background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;padding:10px 12px;font-size:12px;color:#92400E;line-height:1.6;"></div>
           <button class="upload-confirm-btn" id="upload-guided-btn" disabled onclick="checkAndOpenGuidedUpload(event)" style="width:100%;">Check &amp; open folder ↗</button>
         </div>
@@ -522,15 +525,18 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
             <option value="">Where does this link belong?</option>
             <option value="regional">Regional Docs (applies to all centers)</option>
             <option value="center">Specific category &amp; center</option>
+            <option value="custom">New section (for admin review)</option>
           </select>
           <div id="link-regional-fields" style="display:none">
-            <select id="link-section-select" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
+            <select id="link-section-select" onchange="updateLinkSectionCustom()" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
               <option value="">Section…</option>
               <option value="SOPs">SOPs</option>
               <option value="Driving">Driving</option>
               <option value="Procedures">Procedures</option>
               <option value="General">General</option>
+              <option value="__custom__">+ Create new section…</option>
             </select>
+            <input id="link-section-custom" type="text" placeholder="New section name…" style="display:none;margin-top:8px;width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='#0B1F35'" onblur="this.style.borderColor='var(--border)'" />
           </div>
           <div id="link-center-fields" style="display:none;gap:10px;flex-direction:column">
             <select id="link-cat-select" onchange="updateLinkCenters()" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
@@ -539,10 +545,16 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
               <option value="safety">Safety</option>
               <option value="rec">REC</option>
               <option value="camps">Camps</option>
+              <option value="__custom__">+ New category (for admin review)</option>
             </select>
+            <input id="link-cat-custom" type="text" placeholder="New category name…" style="display:none;width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='#0B1F35'" onblur="this.style.borderColor='var(--border)'" />
             <select id="link-center-select" disabled style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
               <option value="">Center…</option>
             </select>
+          </div>
+          <div id="link-custom-dest-fields" style="display:none;gap:10px;flex-direction:column">
+            <input id="link-custom-section-input" type="text" placeholder="Describe where this link belongs…" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='#0B1F35'" onblur="this.style.borderColor='var(--border)'" />
+            <div style="font-size:11px;color:var(--text-hint);background:#F5F3EF;border-radius:6px;padding:8px 10px;">📋 This will be sent to the admin for review before going live.</div>
           </div>
           <button class="upload-confirm-btn" id="link-submit-btn" onclick="submitLink(event)" style="width:100%;">Save link</button>
           <div id="link-result" style="font-size:12px;text-align:center;display:none"></div>
@@ -931,15 +943,26 @@ function openUploadModal() {
   document.getElementById('upload-center-sel').value = '';
   document.getElementById('upload-center-sel').disabled = true;
   document.getElementById('upload-guided-btn').disabled = true;
+  document.getElementById('upload-guided-btn').textContent = 'Check & open folder ↗';
   document.getElementById('upload-guided-selects').style.display = 'none';
   document.getElementById('upload-filename-input').value = '';
+  document.getElementById('upload-custom-section-input').value = '';
+  document.getElementById('upload-custom-section-input').style.display = 'none';
+  document.getElementById('upload-custom-note').style.display = 'none';
   document.getElementById('upload-duplicate-warning').style.display = 'none';
   document.getElementById('upload-link-fields').style.display = 'none';
   document.getElementById('link-name-input').value = '';
   document.getElementById('link-url-input').value = '';
   document.getElementById('link-dest-select').value = '';
+  document.getElementById('link-section-select').value = '';
+  document.getElementById('link-section-custom').value = '';
+  document.getElementById('link-section-custom').style.display = 'none';
+  document.getElementById('link-cat-custom').value = '';
+  document.getElementById('link-cat-custom').style.display = 'none';
+  document.getElementById('link-custom-section-input').value = '';
   document.getElementById('link-regional-fields').style.display = 'none';
   document.getElementById('link-center-fields').style.display = 'none';
+  document.getElementById('link-custom-dest-fields').style.display = 'none';
   document.getElementById('link-result').style.display = 'none';
   document.getElementById('upload-modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -969,6 +992,28 @@ function toggleUploadRoute(type) {
 function updateUploadCenters() {
   const cat = document.getElementById('upload-cat-sel').value;
   const sel = document.getElementById('upload-center-sel');
+  const customIn = document.getElementById('upload-custom-section-input');
+  const customNote = document.getElementById('upload-custom-note');
+  const btn = document.getElementById('upload-guided-btn');
+
+  // Custom section selected
+  if (cat === '__custom__') {
+    sel.innerHTML = '<option value="">Center (optional)…</option>';
+    Object.entries(UPLOAD_CENTER_LABELS).forEach(([key, label]) => {
+      const opt = document.createElement('option'); opt.value = key; opt.textContent = label; sel.appendChild(opt);
+    });
+    sel.disabled = false;
+    customIn.style.display = 'block';
+    customNote.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Submit for review ↗';
+    sel.onchange = () => {};
+    return;
+  }
+
+  customIn.style.display = 'none';
+  customNote.style.display = 'none';
+  btn.textContent = 'Check & open folder ↗';
   sel.innerHTML = '<option value="">Center…</option>';
   if (cat) {
     Object.entries(UPLOAD_CENTER_LABELS).forEach(([key, label]) => {
@@ -977,10 +1022,10 @@ function updateUploadCenters() {
     sel.disabled = false;
   } else { sel.disabled = true; }
   sel.onchange = () => {
-    document.getElementById('upload-guided-btn').disabled = !(cat && sel.value);
+    btn.disabled = !(cat && sel.value);
     document.getElementById('upload-duplicate-warning').style.display = 'none';
   };
-  document.getElementById('upload-guided-btn').disabled = true;
+  btn.disabled = true;
   document.getElementById('upload-duplicate-warning').style.display = 'none';
 }
 
@@ -989,6 +1034,36 @@ async function checkAndOpenGuidedUpload(e) {
   const cat    = document.getElementById('upload-cat-sel').value;
   const center = document.getElementById('upload-center-sel').value;
   const fname  = document.getElementById('upload-filename-input').value.trim();
+  const customSection = document.getElementById('upload-custom-section-input').value.trim();
+
+  // Custom section — submit as pending review
+  if (cat === '__custom__') {
+    const btn = document.getElementById('upload-guided-btn');
+    btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      await fetch('/.netlify/functions/save-link', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          name: fname || 'Untitled file',
+          url: 'pending-file-upload',
+          destination: 'pending',
+          customSection: customSection || 'Unspecified',
+          centerHint: center || '',
+          note: 'Custom section file upload — awaiting admin placement'
+        })
+      });
+      document.getElementById('upload-duplicate-warning').style.display = 'block';
+      document.getElementById('upload-duplicate-warning').style.background = '#ECFDF5';
+      document.getElementById('upload-duplicate-warning').style.borderColor = '#6EE7B7';
+      document.getElementById('upload-duplicate-warning').style.color = '#065F46';
+      document.getElementById('upload-duplicate-warning').innerHTML = '✓ Submitted for admin review. Meanwhile, <a href="https://drive.google.com/drive/folders/1T3ADK73rj5CizyVIZ6popjiYjgFUZAqY" target="_blank" style="color:#065F46;font-weight:600;">upload your file to Dump ↗</a> so the admin can place it.';
+      btn.disabled = false; btn.textContent = 'Check & open folder ↗';
+    } catch(err) {
+      btn.disabled = false; btn.textContent = 'Check & open folder ↗';
+    }
+    return;
+  }
+
   const folderId = UPLOAD_FOLDERS[cat]?.[center];
   if (!folderId) return;
   const btn = document.getElementById('upload-guided-btn');
@@ -1037,18 +1112,28 @@ function updateLinkDestFields() {
   const cf = document.getElementById('link-center-fields');
   cf.style.display = dest === 'center' ? 'flex' : 'none';
   cf.style.flexDirection = 'column';
+  const cdf = document.getElementById('link-custom-dest-fields');
+  cdf.style.display = dest === 'custom' ? 'flex' : 'none';
+  cdf.style.flexDirection = 'column';
+}
+
+function updateLinkSectionCustom() {
+  const val = document.getElementById('link-section-select').value;
+  document.getElementById('link-section-custom').style.display = val === '__custom__' ? 'block' : 'none';
 }
 
 function updateLinkCenters() {
   const cat = document.getElementById('link-cat-select').value;
   const sel = document.getElementById('link-center-select');
+  const customIn = document.getElementById('link-cat-custom');
+  customIn.style.display = cat === '__custom__' ? 'block' : 'none';
   sel.innerHTML = '<option value="">Center…</option>';
-  if (cat) {
+  if (cat && cat !== '__custom__') {
     Object.entries(UPLOAD_CENTER_LABELS).forEach(([key, label]) => {
       const opt = document.createElement('option'); opt.value = key; opt.textContent = label; sel.appendChild(opt);
     });
     sel.disabled = false;
-  } else { sel.disabled = true; }
+  } else { sel.disabled = cat === '__custom__' ? false : true; }
 }
 
 async function submitLink(e) {
@@ -1065,10 +1150,35 @@ async function submitLink(e) {
   btn.disabled = true; btn.textContent = 'Saving…';
 
   const payload = { name, url, destination: dest || 'pending' };
-  if (dest === 'regional') payload.section = document.getElementById('link-section-select').value || 'General';
-  if (dest === 'center') {
-    payload.category = document.getElementById('link-cat-select').value;
-    payload.center   = document.getElementById('link-center-select').value;
+
+  if (dest === 'regional') {
+    const sectionSel = document.getElementById('link-section-select').value;
+    const sectionCustom = document.getElementById('link-section-custom').value.trim();
+    if (sectionSel === '__custom__' && sectionCustom) {
+      // Custom section → goes to pending with note
+      payload.destination = 'pending';
+      payload.section = sectionCustom;
+      payload.customSection = true;
+      payload.note = 'New regional section proposed: ' + sectionCustom;
+    } else {
+      payload.section = sectionSel || 'General';
+    }
+  } else if (dest === 'center') {
+    const catSel = document.getElementById('link-cat-select').value;
+    const catCustom = document.getElementById('link-cat-custom').value.trim();
+    if (catSel === '__custom__' && catCustom) {
+      payload.destination = 'pending';
+      payload.customSection = true;
+      payload.note = 'New category proposed: ' + catCustom;
+    } else {
+      payload.category = catSel;
+      payload.center   = document.getElementById('link-center-select').value;
+    }
+  } else if (dest === 'custom') {
+    const customNote = document.getElementById('link-custom-section-input').value.trim();
+    payload.destination = 'pending';
+    payload.customSection = true;
+    payload.note = customNote || 'Custom section — no description provided';
   }
 
   try {
@@ -1088,7 +1198,8 @@ async function submitLink(e) {
     } else if (data.success) {
       result.style.display='block'; result.style.color='#059669';
       result.style.background=''; result.style.border=''; result.style.padding='0'; result.style.borderRadius='0';
-      result.textContent = dest === 'pending' ? '✓ Link submitted for admin review' : '✓ Link saved successfully';
+      const isPending = dest === 'pending' || dest === 'custom' || payload.customSection;
+      result.textContent = isPending ? '✓ Submitted for admin review' : '✓ Link saved successfully';
       setTimeout(closeUploadModal, 1500);
     } else throw new Error(data.error);
   } catch(err) {
