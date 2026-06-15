@@ -232,17 +232,21 @@ async function dismissLink(linkId, action, btn) {
   btn.disabled = true;
   card.querySelectorAll('button').forEach(b => b.disabled = true);
   try {
-    const r = await fetch('/.netlify/functions/reject-move', {
+    const r = await fetch('/.netlify/functions/delete-link', {
       method: 'POST', credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ requestId: linkId, store: 'links-pending' })
+      body: JSON.stringify({ linkId, store: 'links-pending' })
     });
-    card.querySelector('.request-actions').innerHTML =
-      action === 'approved'
-        ? '<span class="done-badge">✓ Reviewed</span>'
-        : '<span style="font-size:12px;color:#A0AEC0">Dismissed</span>';
+    const data = await r.json();
+    if (data.success) {
+      card.querySelector('.request-actions').innerHTML =
+        action === 'approved'
+          ? '<span class="done-badge">✓ Reviewed</span>'
+          : '<span style="font-size:12px;color:#A0AEC0">Dismissed</span>';
+    } else throw new Error(data.error);
   } catch(err) {
     card.querySelectorAll('button').forEach(b => b.disabled = false);
+    alert('Error: ' + err.message);
   }
 }
 
