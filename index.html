@@ -467,14 +467,16 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
     <h3>Upload files</h3>
     <div class="upload-modal-sub">Choose how you'd like to contribute. Files go to Google Drive; links are stored and appear in the relevant drawer.</div>
 
-    <div class="upload-option" onclick="toggleUploadRoute('guided')">
-      <div class="upload-option-icon green">
+    <div class="upload-option">
+      <div class="upload-option-icon green" onclick="toggleUploadRoute('guided')" style="cursor:pointer;flex-shrink:0">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       </div>
       <div style="flex:1">
-        <div class="upload-option-title">I know where it goes</div>
-        <div class="upload-option-desc">Pick a category and center — opens that folder directly in Drive.</div>
-        <div class="upload-select-row" id="upload-guided-selects" style="display:none">
+        <div onclick="toggleUploadRoute('guided')" style="cursor:pointer">
+          <div class="upload-option-title">I know where it goes</div>
+          <div class="upload-option-desc">Pick a category and center — opens that folder directly in Drive.</div>
+        </div>
+        <div class="upload-select-row" id="upload-guided-selects" style="display:none" onclick="event.stopPropagation()">
           <div style="display:flex;gap:10px;">
             <select id="upload-cat-sel" onchange="updateUploadCenters()" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
               <option value="">Category…</option>
@@ -504,14 +506,16 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
       </div>
     </div>
 
-    <div class="upload-option" id="link-option" onclick="toggleUploadRoute('link')">
-      <div class="upload-option-icon" style="background:rgba(34,211,238,0.12)">
+    <div class="upload-option" id="link-option">
+      <div class="upload-option-icon" style="background:rgba(34,211,238,0.12);cursor:pointer;flex-shrink:0" onclick="toggleUploadRoute('link')">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0891B2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
       </div>
       <div style="flex:1">
-        <div class="upload-option-title">Add a link</div>
-        <div class="upload-option-desc">Save a URL as a resource — appears in the relevant drawer alongside files.</div>
-        <div id="upload-link-fields" style="display:none;margin-top:14px;display:none;flex-direction:column;gap:10px;">
+        <div onclick="toggleUploadRoute('link')" style="cursor:pointer">
+          <div class="upload-option-title">Add a link</div>
+          <div class="upload-option-desc">Save a URL as a resource — appears in the relevant drawer alongside files.</div>
+        </div>
+        <div id="upload-link-fields" style="display:none;flex-direction:column;gap:10px;margin-top:14px;" onclick="event.stopPropagation()">
           <input id="link-name-input" type="text" placeholder="Link name (e.g. ISNA Volunteer Guidelines)" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='#0B1F35'" onblur="this.style.borderColor='var(--border)'" />
           <input id="link-url-input" type="url" placeholder="https://…" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='#0B1F35'" onblur="this.style.borderColor='var(--border)'" />
           <select id="link-dest-select" onchange="updateLinkDestFields()" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
