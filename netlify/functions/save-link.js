@@ -9,32 +9,32 @@ async function blobPut(store, key, value) {
   if (!r.ok) throw new Error('Blob write failed: ' + await r.text());
 }
 
-async function blobList(store) {
-  const r = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}`, { headers:{ Authorization:`Bearer ${tok()}` } });
-  if (!r.ok) return [];
-  return (await r.json()).blobs || [];
-}
-
-async function blobGet(store, key) {
-  const r = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}/${key}`, { headers:{ Authorization:`Bearer ${tok()}` } });
-  if (!r.ok) return null;
-  return r.json();
-}
-
-// Only checks for dupes within the same prefix — fast because it fetches
-// individual items only when the prefix actually has matches
+// Check for dupes with a strict timeout — if it takes too long, skip and save anyway
 async function quickDupeCheck(store, keyPrefix, name, url) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 4000); // 4s max
   try {
-    const blobs = await blobList(store);
+    const r = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}`, {
+      headers:{ Authorization:`Bearer ${tok()}` },
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+    if (!r.ok) return null;
+    const blobs = (await r.json()).blobs || [];
     const matching = blobs.filter(b => decodeURIComponent(b.key).startsWith(keyPrefix));
-    if (matching.length === 0) return null; // nothing there — skip individual fetches
-    for (const b of matching) {
-      const item = await blobGet(store, b.key);
-      if (!item) continue;
-      if (item.name?.toLowerCase() === name?.toLowerCase() || item.url === url) return item;
-    }
-    return null;
-  } catch { return null; }
+    if (matching.length === 0) return null; // nothing there — skip fetches
+
+    // Fetch matching ones in parallel (usually 0-5)
+    const items = await Promise.all(matching.map(b =>
+      fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}/${b.key}`, {
+        headers:{ Authorization:`Bearer ${tok()}` }
+      }).then(r => r.ok ? r.json() : null).catch(() => null)
+    ));
+    return items.find(i => i && (i.name?.toLowerCase() === name?.toLowerCase() || i.url === url)) || null;
+  } catch {
+    clearTimeout(timeout);
+    return null; // timeout or error — skip dupe check, allow save
+  }
 }
 
 exports.handler = async (event) => {
