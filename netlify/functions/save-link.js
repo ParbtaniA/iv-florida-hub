@@ -1,18 +1,43 @@
-// save-link.js — stores a named URL in Netlify Blobs
-// Links can go to: regional/{section} or center/{category}/{center}
-// If no exact location → stored in pending for admin review
-
 const SITE_ID = '3bfe8c7b-192d-4d4d-aa10-6aced98a037c';
 const TOKEN   = process.env.NETLIFY_BLOBS_TOKEN;
 
+async function blobListAll(store) {
+  const r = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}`, {
+    headers: { Authorization: `Bearer ${TOKEN}` }
+  });
+  if (!r.ok) return [];
+  return (await r.json()).blobs || [];
+}
+
+async function blobGet(store, key) {
+  const r = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}/${key}`, {
+    headers: { Authorization: `Bearer ${TOKEN}` }
+  });
+  if (!r.ok) return null;
+  return r.json();
+}
+
 async function blobSet(store, key, value) {
-  const url = `https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}/${encodeURIComponent(key)}`;
-  const r = await fetch(url, {
+  const r = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}/${encodeURIComponent(key)}`, {
     method: 'PUT',
     headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(value)
   });
   if (!r.ok) throw new Error('Blob write failed: ' + await r.text());
+}
+
+async function findDuplicate(store, name, url, keyPrefix) {
+  const all = await blobListAll(store);
+  for (const b of all) {
+    const decodedKey = decodeURIComponent(b.key);
+    if (!decodedKey.startsWith(keyPrefix)) continue;
+    const item = await blobGet(store, b.key);
+    if (!item) continue;
+    if (item.name?.toLowerCase() === name?.toLowerCase() || item.url === url) {
+      return item;
+    }
+  }
+  return null;
 }
 
 exports.handler = async (event) => {
@@ -21,27 +46,30 @@ exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: '{}' };
 
   try {
-    const { name, url, destination, category, center, section } = JSON.parse(event.body);
+    const { name, url, destination, category, center, section, force } = JSON.parse(event.body);
     if (!name || !url) return { statusCode: 400, headers, body: JSON.stringify({ error: 'name and url required' }) };
 
     const id = `link_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
     const link = { id, name, url, createdAt: new Date().toISOString() };
 
     if (destination === 'regional' && section) {
-      // Goes to Regional tab under the given section
-      link.destination = 'regional';
-      link.section = section;
+      if (!force) {
+        const existing = await findDuplicate('links-regional', name, url, `${section}:`);
+        if (existing) return { statusCode: 200, headers, body: JSON.stringify({ duplicate: true, existing: { name: existing.name, url: existing.url } }) };
+      }
+      link.destination = 'regional'; link.section = section;
       await blobSet('links-regional', `${section}:${id}`, link);
+
     } else if (destination === 'center' && category && center) {
-      // Goes to a specific center drawer
-      link.destination = 'center';
-      link.category = category;
-      link.center = center;
+      if (!force) {
+        const existing = await findDuplicate('links-center', name, url, `${category}:${center}:`);
+        if (existing) return { statusCode: 200, headers, body: JSON.stringify({ duplicate: true, existing: { name: existing.name, url: existing.url } }) };
+      }
+      link.destination = 'center'; link.category = category; link.center = center;
       await blobSet('links-center', `${category}:${center}:${id}`, link);
+
     } else {
-      // No exact location — goes to pending for admin review
       link.destination = 'pending';
-      link.note = 'No location specified — needs admin review';
       await blobSet('links-pending', id, link);
     }
 
