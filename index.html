@@ -1304,46 +1304,19 @@ async function submitLink(e) {
       body: JSON.stringify(payload)
     });
     const data = await resp.json();
-    if (data.duplicate) {
-      // Show duplicate warning with link to existing
-      result.style.display='block'; result.style.color='#92400E';
-      result.style.background='#FEF3C7'; result.style.border='1px solid #FCD34D';
-      result.style.borderRadius='8px'; result.style.padding='10px 12px'; result.style.lineHeight='1.6';
-      result.innerHTML = `⚠ A link named <strong>${data.existing.name}</strong> already exists here.<br><a href="${data.existing.url}" target="_blank" rel="noopener" style="color:#92400E;font-weight:600;text-decoration:underline;">${data.existing.url} ↗</a><br><span style="margin-top:4px;display:inline-block;">Save anyway? <span onclick="forceSaveLink()" style="text-decoration:underline;cursor:pointer;font-weight:600;">Yes, save it</span></span>`;
-      window._pendingLinkPayload = payload;
-      btn.disabled = false; btn.textContent = 'Save link';
-    } else if (data.success) {
+    if (data.success) {
       result.style.display='block'; result.style.color='#059669';
       result.style.background=''; result.style.border=''; result.style.padding='0'; result.style.borderRadius='0';
       const isPending = dest === 'pending' || dest === 'custom' || payload.customSection;
-      result.textContent = isPending ? '✓ Submitted for admin review' : '✓ Link saved successfully';
-      setTimeout(closeUploadModal, 1500);
-    } else throw new Error(data.error);
+      result.textContent = isPending ? '✓ Submitted for admin review' : '✓ Link saved';
+      setTimeout(closeUploadModal, 1200);
+    } else throw new Error(data.error || 'Save failed');
   } catch(err) {
     result.style.display='block'; result.style.color='#DC2626';
     result.style.background=''; result.style.border=''; result.style.padding='0'; result.style.borderRadius='0';
     result.textContent = 'Error: ' + err.message;
     btn.disabled = false; btn.textContent = 'Save link';
   }
-}
-
-async function forceSaveLink() {
-  if (!window._pendingLinkPayload) return;
-  const payload = { ...window._pendingLinkPayload, force: true };
-  const result = document.getElementById('link-result');
-  try {
-    const resp = await fetch('/.netlify/functions/save-link', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
-    const data = await resp.json();
-    if (data.success) {
-      result.style.display='block'; result.style.color='#059669';
-      result.style.background=''; result.style.border=''; result.style.padding='0'; result.style.borderRadius='0';
-      result.textContent = '✓ Link saved';
-      setTimeout(closeUploadModal, 1200);
-    }
-  } catch(err) { result.textContent = 'Error: ' + err.message; }
 }
 
 document.getElementById('upload-modal-overlay').addEventListener('click', function(e) {
