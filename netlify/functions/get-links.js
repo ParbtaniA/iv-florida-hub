@@ -1,21 +1,4 @@
-const SITE_ID = '3bfe8c7b-192d-4d4d-aa10-6aced98a037c';
-const TOKEN   = process.env.NETLIFY_BLOBS_TOKEN;
-
-async function blobListAll(store) {
-  const r = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}`, {
-    headers: { Authorization: `Bearer ${TOKEN}` }
-  });
-  if (!r.ok) return [];
-  return (await r.json()).blobs || [];
-}
-
-async function blobGet(store, key) {
-  const r = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}/${key}`, {
-    headers: { Authorization: `Bearer ${TOKEN}` }
-  });
-  if (!r.ok) return null;
-  return r.json();
-}
+const { getStore } = require('@netlify/blobs');
 
 exports.handler = async (event) => {
   const headers = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
@@ -24,24 +7,21 @@ exports.handler = async (event) => {
   const { store, section, category, center } = event.queryStringParameters || {};
 
   try {
-    let storeName, filterFn;
+    let storeName, prefix;
 
     if (store === 'pending') {
-      storeName = 'links-pending';
-      filterFn = () => true;
+      storeName = 'links-pending'; prefix = '';
     } else if (store === 'regional' && section) {
-      storeName = 'links-regional';
-      filterFn = (key) => decodeURIComponent(key).startsWith(`${section}:`);
+      storeName = 'links-regional'; prefix = `${section}:`;
     } else if (store === 'center' && category && center) {
-      storeName = 'links-center';
-      filterFn = (key) => decodeURIComponent(key).startsWith(`${category}:${center}:`);
+      storeName = 'links-center'; prefix = `${category}:${center}:`;
     } else {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid params' }) };
     }
 
-    const allBlobs = await blobListAll(storeName);
-    const matching = allBlobs.filter(b => filterFn(b.key));
-    const links = await Promise.all(matching.map(b => blobGet(storeName, b.key)));
+    const blobStore = getStore({ name: storeName, consistency: 'strong' });
+    const { blobs = [] } = await blobStore.list(prefix ? { prefix } : {});
+    const links = await Promise.all(blobs.map(b => blobStore.get(b.key, { type: 'json' })));
     const filtered = links.filter(Boolean).sort((a, b) => a.name.localeCompare(b.name));
     return { statusCode: 200, headers, body: JSON.stringify({ links: filtered }) };
   } catch (err) {
