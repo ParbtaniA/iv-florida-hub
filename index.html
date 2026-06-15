@@ -658,22 +658,31 @@ let drawerStack = [];
 let currentFolderId = null;
 let currentCenterName = '';
 let currentDriveLink = '';
+let currentDrawerCat = '';
+let currentDrawerCenter = '';
 
 const FILE_ICONS = {
   folder: '📁', doc: '📄', sheet: '📊', slides: '📑', pdf: '📕', image: '🖼', video: '🎬', file: '📎'
 };
 
+// Normalize center name to Blobs key (matches what save-link stores)
+function normCenter(center) {
+  return center.replace('Ft. Lauderdale', 'FtLauderdale').replace(/\s+/g, '');
+}
+
 async function openDrawer(cat, center, folderId, title) {
   drawerStack = [{ folderId, label: center, driveLink: `https://drive.google.com/drive/folders/${folderId}` }];
   currentCenterName = center;
   currentFolderId = folderId;
+  currentDrawerCat = cat;
+  currentDrawerCenter = center;
   document.getElementById('drawer-title').textContent = title;
   document.getElementById('drawer-subtitle').textContent = `${TABS[cat]?.badge || cat.toUpperCase()} · ${center}`;
   document.getElementById('drawer-overlay').classList.add('open');
   document.getElementById('drawer').classList.add('open');
   document.body.style.overflow = 'hidden';
   renderBreadcrumb();
-  await loadFolder(folderId);
+  await loadFolder(folderId, true);
 }
 
 function closeDrawer() {
@@ -681,6 +690,8 @@ function closeDrawer() {
   document.getElementById('drawer').classList.remove('open');
   document.body.style.overflow = '';
   drawerStack = [];
+  currentDrawerCat = '';
+  currentDrawerCenter = '';
 }
 
 function renderBreadcrumb() {
@@ -695,16 +706,24 @@ function renderBreadcrumb() {
 async function navToStack(index) {
   drawerStack = drawerStack.slice(0, index + 1);
   renderBreadcrumb();
-  await loadFolder(drawerStack[drawerStack.length - 1].folderId);
+  // Only show links on root level (index 0)
+  await loadFolder(drawerStack[drawerStack.length - 1].folderId, index === 0);
 }
 
-async function loadFolder(folderId) {
+async function loadFolder(folderId, isRoot = false) {
   const body = document.getElementById('drawer-body');
   body.innerHTML = '<div class="drawer-loading"><div class="spinner"></div><span style="font-size:13px;color:var(--text-hint)">Loading files...</span></div>';
 
   try {
-    const resp = await fetch(`/.netlify/functions/drive?folderId=${folderId}`);
-    const data = await resp.json();
+    // Fetch Drive files and (if root) Blobs links in parallel
+    const fetches = [fetch(`/.netlify/functions/drive?folderId=${folderId}`).then(r => r.json())];
+    if (isRoot && currentDrawerCat && currentDrawerCenter) {
+      fetches.push(
+        fetch(`/.netlify/functions/get-links?store=center&category=${encodeURIComponent(currentDrawerCat)}&center=${encodeURIComponent(normCenter(currentDrawerCenter))}`).then(r => r.json()).catch(() => ({ links: [] }))
+      );
+    }
+    const [data, linksData] = await Promise.all(fetches);
+    const links = linksData?.links || [];
 
     if (data.error) {
       body.innerHTML = `<div class="drawer-empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>${data.error}</p></div>`;
@@ -714,34 +733,52 @@ async function loadFolder(folderId) {
     const files = data.files || [];
     const driveLink = `https://drive.google.com/drive/folders/${folderId}`;
 
-    if (files.length === 0) {
+    if (files.length === 0 && links.length === 0) {
       body.innerHTML = `<div class="drawer-empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><p>This folder is empty</p></div><div class="drawer-open-drive"><a href="${driveLink}" target="_blank" rel="noopener">Open in Google Drive <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>`;
       return;
     }
 
-    const listHTML = files.map(f => {
-      const icon = FILE_ICONS[f.type] || FILE_ICONS.file;
-      const modified = f.modified ? new Date(f.modified).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '';
-      if (f.isFolder) {
-        return `<div class="file-item" onclick="drillIntoFolder('${f.id}','${f.name.replace(/'/g, "\\'")}')">
-          <div class="file-icon folder">${icon}</div>
-          <div class="file-name">${f.name}</div>
-          <div class="file-meta">${modified}</div>
-          <svg class="file-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
-        </div>`;
-      }
-      const safeName = f.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-      return `<div class="file-item">
-        <a href="${f.viewLink}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;flex:1;text-decoration:none;color:inherit;min-width:0;overflow:hidden;">
-          <div class="file-icon ${f.type}" style="flex-shrink:0">${icon}</div>
-          <div class="file-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.name}</div>
-          <div class="file-meta" style="flex-shrink:0">${modified}</div>
-        </a>
-        <button class="file-move-btn" onclick="openMoveModal('${f.id}','${safeName}','${folderId}')">Move</button>
-      </div>`;
-    }).join('');
+    let html = '<div class="file-list">';
 
-    body.innerHTML = `<div class="file-list">${listHTML}</div><div class="drawer-open-drive"><a href="${driveLink}" target="_blank" rel="noopener">Open folder in Google Drive <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>`;
+    if (files.length > 0) {
+      if (links.length > 0) html += `<div class="drawer-section-label">Files</div>`;
+      html += files.map(f => {
+        const icon = FILE_ICONS[f.type] || FILE_ICONS.file;
+        const modified = f.modified ? new Date(f.modified).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '';
+        if (f.isFolder) {
+          return `<div class="file-item" onclick="drillIntoFolder('${f.id}','${f.name.replace(/'/g, "\\'")}')">
+            <div class="file-icon folder">${icon}</div>
+            <div class="file-name">${f.name}</div>
+            <div class="file-meta">${modified}</div>
+            <svg class="file-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+          </div>`;
+        }
+        const safeName = f.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        return `<div class="file-item">
+          <a href="${f.viewLink}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;flex:1;text-decoration:none;color:inherit;min-width:0;overflow:hidden;">
+            <div class="file-icon ${f.type}" style="flex-shrink:0">${icon}</div>
+            <div class="file-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.name}</div>
+            <div class="file-meta" style="flex-shrink:0">${modified}</div>
+          </a>
+          <button class="file-move-btn" onclick="openMoveModal('${f.id}','${safeName}','${folderId}')">Move</button>
+        </div>`;
+      }).join('');
+    }
+
+    if (links.length > 0) {
+      if (files.length > 0) html += `<div class="drawer-section-label" style="margin-top:8px">Links</div>`;
+      else html += `<div class="drawer-section-label">Links</div>`;
+      html += links.map(l => `
+        <a class="link-item" href="${l.url}" target="_blank" rel="noopener">
+          <div class="file-icon link" style="flex-shrink:0">🔗</div>
+          <div class="file-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.name}</div>
+          <svg class="file-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>`).join('');
+    }
+
+    html += '</div>';
+    html += `<div class="drawer-open-drive"><a href="${driveLink}" target="_blank" rel="noopener">Open folder in Google Drive <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>`;
+    body.innerHTML = html;
 
   } catch(err) {
     body.innerHTML = `<div class="drawer-empty"><p style="color:var(--text-hint)">Could not load files. Check your connection.</p></div>`;
@@ -751,7 +788,7 @@ async function loadFolder(folderId) {
 async function drillIntoFolder(folderId, name) {
   drawerStack.push({ folderId, label: name, driveLink: `https://drive.google.com/drive/folders/${folderId}` });
   renderBreadcrumb();
-  await loadFolder(folderId);
+  await loadFolder(folderId, false); // no links in subfolders
 }
 
 function filterCards(q) {
@@ -957,18 +994,6 @@ async function loadRegionalFolder(folderId, section) {
   } catch(err) {
     body.innerHTML = `<div class="drawer-empty"><p style="color:var(--text-hint)">Could not load resources.</p></div>`;
   }
-}
-
-// Also patch loadFolder to show links for center drawers
-const _origLoadFolder = loadFolder;
-async function loadFolderWithLinks(folderId) {
-  // Run original load — it renders files
-  // Then append links below
-  await _origLoadFolder(folderId);
-  // Find category + center from drawer stack
-  if (drawerStack.length !== 1) return; // only on root folder, not subfolders
-  // We don't have category/center info here — skip for now, links in center drawers
-  // will be added in a future enhancement
 }
 
 // ── Upload modal ──
