@@ -130,7 +130,14 @@ function renderDashboard(data) {
             </div>`).join('')
         }
       </div>
+
+      <div class="page-title" style="margin-top:40px">Pending Links &amp; Sections</div>
+      <div class="page-sub" id="pending-links-sub">Loading…</div>
+      <div id="pending-links-list"><div class="empty-state" style="padding:20px 0"><div class="empty-icon">🔗</div><p>Loading pending links…</p></div></div>
     </div>`;
+
+  loadPendingLinks();
+}
 }
 
 async function approve(requestId, btn) {
@@ -179,6 +186,64 @@ async function reject(requestId, btn) {
 function logout() {
   document.cookie = 'iv_admin=; Path=/; Max-Age=0';
   window.location.reload();
+}
+
+async function loadPendingLinks() {
+  const SITE_ID = '3bfe8c7b-192d-4d4d-aa10-6aced98a037c';
+  const sub = document.getElementById('pending-links-sub');
+  const list = document.getElementById('pending-links-list');
+  if (!sub || !list) return;
+
+  try {
+    const r = await fetch('/.netlify/functions/get-links?store=pending', { credentials: 'include' });
+    const data = await r.json();
+    const links = data.links || [];
+
+    sub.textContent = links.length + ' pending link' + (links.length !== 1 ? 's' : '');
+
+    if (links.length === 0) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon">🔗</div><h3>No pending links</h3><p>When a volunteer submits a link for a new or unknown section, it will appear here.</p></div>';
+      return;
+    }
+
+    list.innerHTML = links.map(l => `
+      <div class="request-card" id="lcard-${l.id}">
+        <div class="request-header">
+          <div class="request-filename">${l.name}</div>
+          <div class="request-time">${new Date(l.createdAt).toLocaleDateString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'})}</div>
+        </div>
+        <div class="request-meta">
+          <a href="${l.url}" target="_blank" rel="noopener" style="color:#0B1F35;font-size:12px;word-break:break-all;">${l.url} ↗</a>
+        </div>
+        ${l.note ? `<div class="request-reason">"${l.note}"</div>` : ''}
+        ${l.customSection ? '<span class="meta-pill" style="background:#FEF3C7;color:#92400E;margin-top:6px;display:inline-block;">⚠ Custom section — needs placement</span>' : ''}
+        <div class="request-actions">
+          <button class="btn-approve" onclick="dismissLink('${l.id}', 'approved', this)">✓ Reviewed</button>
+          <button class="btn-reject" onclick="dismissLink('${l.id}', 'rejected', this)">✕ Dismiss</button>
+        </div>
+      </div>`).join('');
+  } catch(err) {
+    if (sub) sub.textContent = 'Could not load pending links';
+  }
+}
+
+async function dismissLink(linkId, action, btn) {
+  const card = document.getElementById('lcard-' + linkId);
+  btn.disabled = true;
+  card.querySelectorAll('button').forEach(b => b.disabled = true);
+  try {
+    const r = await fetch('/.netlify/functions/reject-move', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requestId: linkId, store: 'links-pending' })
+    });
+    card.querySelector('.request-actions').innerHTML =
+      action === 'approved'
+        ? '<span class="done-badge">✓ Reviewed</span>'
+        : '<span style="font-size:12px;color:#A0AEC0">Dismissed</span>';
+  } catch(err) {
+    card.querySelectorAll('button').forEach(b => b.disabled = false);
+  }
 }
 
 // Init
