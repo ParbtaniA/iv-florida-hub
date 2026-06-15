@@ -936,7 +936,9 @@ async function loadRegionalSections() {
 
 // ── Regional drawer ──
 async function openRegionalDrawer(section, folderId) {
-  drawerStack = [{ folderId, label: section, driveLink: `https://drive.google.com/drive/folders/${folderId}` }];
+  drawerStack = [{ folderId: folderId || null, label: section, driveLink: folderId ? `https://drive.google.com/drive/folders/${folderId}` : null }];
+  currentDrawerCat = 'regional';
+  currentDrawerCenter = section;
   document.getElementById('drawer-title').textContent = `Regional — ${section}`;
   document.getElementById('drawer-subtitle').textContent = `REG · ${section}`;
   document.getElementById('drawer-overlay').classList.add('open');
@@ -950,25 +952,28 @@ async function loadRegionalFolder(folderId, section) {
   const body = document.getElementById('drawer-body');
   body.innerHTML = '<div class="drawer-loading"><div class="spinner"></div><span style="font-size:13px;color:var(--text-hint)">Loading…</span></div>';
   try {
-    // Load Drive files and Blobs links in parallel
-    const [driveResp, linksResp] = await Promise.all([
-      fetch(`/.netlify/functions/drive?folderId=${folderId}`).then(r => r.json()),
-      fetch(`/.netlify/functions/get-links?store=regional&section=${encodeURIComponent(section)}`).then(r => r.json())
-    ]);
+    // Fetch Drive files (skip if no folderId) and Blobs links in parallel
+    const fetches = [
+      folderId
+        ? fetch(`/.netlify/functions/drive?folderId=${folderId}`).then(r => r.json()).catch(() => ({ files:[] }))
+        : Promise.resolve({ files:[] }),
+      fetch(`/.netlify/functions/get-links?store=regional&section=${encodeURIComponent(section)}`).then(r => r.json()).catch(() => ({ links:[] }))
+    ];
+    const [driveResp, linksResp] = await Promise.all(fetches);
 
     const files = driveResp.files || [];
     const links = linksResp.links || [];
-    const driveLink = `https://drive.google.com/drive/folders/${folderId}`;
+    const driveLink = folderId ? `https://drive.google.com/drive/folders/${folderId}` : null;
 
     if (files.length === 0 && links.length === 0) {
-      body.innerHTML = `<div class="drawer-empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><p>No resources yet</p></div><div class="drawer-open-drive"><a href="${driveLink}" target="_blank" rel="noopener">Open in Google Drive ↗</a></div>`;
+      body.innerHTML = `<div class="drawer-empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><p>No resources yet</p></div>${driveLink ? `<div class="drawer-open-drive"><a href="${driveLink}" target="_blank" rel="noopener">Open in Google Drive ↗</a></div>` : ''}`;
       return;
     }
 
     let html = '<div class="file-list">';
 
     if (files.length > 0) {
-      html += `<div class="drawer-section-label">Files</div>`;
+      if (links.length > 0) html += `<div class="drawer-section-label">Files</div>`;
       html += files.map(f => {
         const icon = FILE_ICONS[f.type] || FILE_ICONS.file;
         const modified = f.modified ? new Date(f.modified).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '';
@@ -979,7 +984,8 @@ async function loadRegionalFolder(folderId, section) {
     }
 
     if (links.length > 0) {
-      html += `<div class="drawer-section-label" style="margin-top:${files.length ? '8px' : '0'}">Links</div>`;
+      if (files.length > 0) html += `<div class="drawer-section-label" style="margin-top:8px">Links</div>`;
+      else html += `<div class="drawer-section-label">Links</div>`;
       html += links.map(l => `
         <a class="link-item" href="${l.url}" target="_blank" rel="noopener">
           <div class="file-icon link" style="flex-shrink:0">🔗</div>
@@ -989,7 +995,7 @@ async function loadRegionalFolder(folderId, section) {
     }
 
     html += '</div>';
-    html += `<div class="drawer-open-drive"><a href="${driveLink}" target="_blank" rel="noopener">Open folder in Google Drive ↗</a></div>`;
+    if (driveLink) html += `<div class="drawer-open-drive"><a href="${driveLink}" target="_blank" rel="noopener">Open folder in Google Drive ↗</a></div>`;
     body.innerHTML = html;
   } catch(err) {
     body.innerHTML = `<div class="drawer-empty"><p style="color:var(--text-hint)">Could not load resources.</p></div>`;
