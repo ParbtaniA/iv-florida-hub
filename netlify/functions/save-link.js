@@ -1,15 +1,37 @@
-const { getStore } = require('@netlify/blobs');
+// save-link.js — raw Netlify Blobs REST API with write-capable token
+const SITE_ID = '3bfe8c7b-192d-4d4d-aa10-6aced98a037c';
 
-async function getBlobStore(storeName) {
-  return getStore({ name: storeName, consistency: 'strong' });
+function token() { return process.env.NETLIFY_BLOBS_TOKEN; }
+
+async function blobPut(store, key, value) {
+  const r = await fetch(
+    `https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}/${encodeURIComponent(key)}`,
+    { method: 'PUT', headers: { Authorization: `Bearer ${token()}`, 'Content-Type': 'application/json' }, body: JSON.stringify(value) }
+  );
+  if (!r.ok) {
+    const err = await r.text();
+    throw new Error('Blob write failed: ' + err);
+  }
 }
 
-async function quickDupeCheck(storeName, keyPrefix, name, url) {
+async function blobList(store) {
+  const r = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}`, { headers: { Authorization: `Bearer ${token()}` } });
+  if (!r.ok) return [];
+  return (await r.json()).blobs || [];
+}
+
+async function blobGet(store, key) {
+  const r = await fetch(`https://api.netlify.com/api/v1/blobs/${SITE_ID}/${store}/${key}`, { headers: { Authorization: `Bearer ${token()}` } });
+  if (!r.ok) return null;
+  return r.json();
+}
+
+async function quickDupeCheck(store, keyPrefix, name, url) {
   try {
-    const store = await getBlobStore(storeName);
-    const { blobs = [] } = await store.list({ prefix: keyPrefix });
-    for (const b of blobs) {
-      const item = await store.get(b.key, { type: 'json' });
+    const blobs = await blobList(store);
+    const matching = blobs.filter(b => decodeURIComponent(b.key).startsWith(keyPrefix));
+    for (const b of matching) {
+      const item = await blobGet(store, b.key);
       if (!item) continue;
       if (item.name?.toLowerCase() === name?.toLowerCase() || item.url === url) return item;
     }
@@ -38,8 +60,7 @@ exports.handler = async (event) => {
         if (existing) return { statusCode: 200, headers, body: JSON.stringify({ duplicate: true, existing: { name: existing.name, url: existing.url } }) };
       }
       link.destination = 'regional'; link.section = section;
-      const store = await getBlobStore('links-regional');
-      await store.setJSON(`${section}:${id}`, link);
+      await blobPut('links-regional', `${section}:${id}`, link);
 
     } else if (destination === 'center' && category && center && !customSection) {
       if (!force) {
@@ -47,13 +68,11 @@ exports.handler = async (event) => {
         if (existing) return { statusCode: 200, headers, body: JSON.stringify({ duplicate: true, existing: { name: existing.name, url: existing.url } }) };
       }
       link.destination = 'center'; link.category = category; link.center = center;
-      const store = await getBlobStore('links-center');
-      await store.setJSON(`${category}:${center}:${id}`, link);
+      await blobPut('links-center', `${category}:${center}:${id}`, link);
 
     } else {
       link.destination = 'pending';
-      const store = await getBlobStore('links-pending');
-      await store.setJSON(id, link);
+      await blobPut('links-pending', id, link);
     }
 
     return { statusCode: 200, headers, body: JSON.stringify({ success: true, id }) };
