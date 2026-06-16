@@ -135,6 +135,24 @@ function renderDashboard(data) {
       <div class="page-sub" id="pending-links-sub">Loading…</div>
       <div id="pending-links-list"><div class="empty-state" style="padding:20px 0"><div class="empty-icon">🔗</div><p>Loading pending links…</p></div></div>
 
+      <div class="page-title" style="margin-top:40px">Content Manager</div>
+      <div class="page-sub">Browse, edit, or delete files and links across all tabs and centers.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 16px;">
+        <select id="cm-cat-sel" onchange="cmUpdateCenters()" style="border:1.5px solid #E2E8F0;border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
+          <option value="">Category…</option>
+          <option value="regional">Regional Docs</option>
+          <option value="eop">EOP</option>
+          <option value="safety">Safety</option>
+          <option value="rec">REC</option>
+          <option value="camps">Camps</option>
+        </select>
+        <select id="cm-center-sel" disabled onchange="cmLoad()" style="border:1.5px solid #E2E8F0;border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
+          <option value="">Section / Center…</option>
+        </select>
+        <button onclick="cmLoad()" style="background:#0B1F35;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">Load</button>
+      </div>
+      <div id="cm-result"></div>
+
       <div class="page-title" style="margin-top:40px">Duplicate Detection</div>
       <div class="page-sub">Scans all 20 center folders and all link stores for duplicates. Keeps the newest copy, removes the rest.</div>
       <div style="display:flex;gap:10px;margin:12px 0 16px;flex-wrap:wrap;">
@@ -440,6 +458,198 @@ async function runDedup(action) {
     scanBtn.disabled = false; scanBtn.textContent = '🔍 Scan for duplicates';
     if (deleteBtn) { deleteBtn.disabled = false; }
   }
+}
+
+// ── Content Manager ──
+const CM_FOLDERS = {
+  eop:    { Miami:'1jVrTx0C9iEmNrNKBR9jBRIfRhlh1DyAD', FtLauderdale:'1gpcSGPhQYSw2IqJJuJxIM6L5i7OaTJ45', Orlando:'1MG8GQlyr1GtW0qY2naY7TRruGMGsU2cW', Tampa:'1D_7igH1-S-p0bATOhG0b3ii51tZg2HRR', Ocala:'1vfoo5356GfC68lDdeiVffT9NNaKJ4Rry' },
+  safety: { Miami:'1ieKjGv4Fv7YrQb-8JZ9KKzMq0lh4_qIo', FtLauderdale:'1X-lsQxaFEH2aUE68RJBR1pQvBk2MXYYQ', Orlando:'1XI0LnP0U0yEk9NzD7OL3O9Sp67j4EgCa', Tampa:'1NzXaNqpBs1N1BSytd4zv1hOARG9RImHf', Ocala:'11Dc0bJC6A3nF2QWYg-wg5j2DMnMk8KrI' },
+  rec:    { Miami:'10YqSvPui8lxfE31E4TpViKOqvliwmJ8G', FtLauderdale:'1c89iBn9Vse3h3HxgT9nuD6i3MonNfJ3v', Orlando:'1Z0DYQkYsPXUYOS--o-BAiAcFN2qgT2cA', Tampa:'1h6ra4O_LpF5bWgI6Xbo7M0S9MVk97yvB', Ocala:'1ASR89ZA-mEfm1ayYRtqWV4Z1SeQTYyAh' },
+  camps:  { Miami:'17xUbiAyEXkH00P7Lf1O9bU4Fjsk3deGF', FtLauderdale:'1qKYp_IeAarga1SiZou1Rg16PofdEi4Cf', Orlando:'13epUEqPvVp0bmi98rX3znJMhLtAM8dVM', Tampa:'1fKo-XKZGpcIUbSI2XkOj5CIlPKxCEKkY', Ocala:'12QeCkZtXbBzdSOTjBWoeyerVSF9tWDa8' },
+  regional: { SOPs:'1L0gp1dpslHnvaak9opm5O0WoshnG__Bq', Driving:'1ZknNuK6I-v8OmVcRgrnzdTLcEraOW18M', Procedures:'1S29MKkoGHplOetWjWzbzD_4xZl7alsrM', General:'15kaTbNoa1XT2ViYqcnpepTIla9YDTZ8f' }
+};
+const CM_CENTER_LABELS = { Miami:'Miami', FtLauderdale:'Ft. Lauderdale', Orlando:'Orlando', Tampa:'Tampa', Ocala:'Ocala' };
+
+function cmUpdateCenters() {
+  const cat = document.getElementById('cm-cat-sel').value;
+  const sel = document.getElementById('cm-center-sel');
+  sel.innerHTML = '<option value="">Section / Center…</option>';
+  if (!cat) { sel.disabled = true; return; }
+  const opts = cat === 'regional'
+    ? Object.keys(CM_FOLDERS.regional)
+    : Object.keys(CM_CENTER_LABELS);
+  opts.forEach(k => {
+    const opt = document.createElement('option');
+    opt.value = k;
+    opt.textContent = cat === 'regional' ? k : CM_CENTER_LABELS[k];
+    sel.appendChild(opt);
+  });
+  sel.disabled = false;
+  document.getElementById('cm-result').innerHTML = '';
+}
+
+async function cmLoad() {
+  const cat = document.getElementById('cm-cat-sel').value;
+  const center = document.getElementById('cm-center-sel').value;
+  const result = document.getElementById('cm-result');
+  if (!cat || !center) return;
+
+  result.innerHTML = '<div class="empty-state" style="padding:16px 0"><div class="spinner"></div><p style="color:#64748B;margin-top:8px">Loading…</p></div>';
+
+  try {
+    const folderId = CM_FOLDERS[cat]?.[center];
+    const linkStore = cat === 'regional' ? 'regional' : 'center';
+    const linkParams = cat === 'regional'
+      ? `store=regional&section=${encodeURIComponent(center)}`
+      : `store=center&category=${encodeURIComponent(cat)}&center=${encodeURIComponent(center)}`;
+
+    const [driveResp, linksResp] = await Promise.all([
+      folderId ? fetch(`/.netlify/functions/drive?folderId=${folderId}`).then(r=>r.json()).catch(()=>({files:[]})) : Promise.resolve({files:[]}),
+      fetch(`/.netlify/functions/get-links?${linkParams}`).then(r=>r.json()).catch(()=>({links:[]}))
+    ]);
+
+    const files = (driveResp.files || []).filter(f => !f.isFolder);
+    const links = linksResp.links || [];
+
+    if (!files.length && !links.length) {
+      result.innerHTML = '<div class="empty-state"><p>Nothing here yet.</p></div>';
+      return;
+    }
+
+    let html = '';
+
+    if (files.length) {
+      html += `<div style="font-size:11px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Files (${files.length})</div>`;
+      html += files.map(f => `
+        <div class="request-card" id="cm-file-${f.id}" style="margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:0;">
+              <div class="request-filename" id="cm-fname-${f.id}">${f.name}</div>
+              <div style="font-size:11px;color:#94A3B8;margin-top:2px;">${f.modified ? new Date(f.modified).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''}</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-shrink:0;">
+              <a href="${f.viewLink}" target="_blank" rel="noopener" style="padding:5px 10px;border:1px solid #E2E8F0;border-radius:6px;font-size:12px;color:#0B1F35;text-decoration:none;">Open ↗</a>
+              <button onclick="cmRenameFile('${f.id}')" style="padding:5px 10px;border:1px solid #E2E8F0;border-radius:6px;font-size:12px;cursor:pointer;background:#fff;font-family:inherit;">Rename</button>
+              <button onclick="cmDeleteFile('${f.id}','${f.name.replace(/'/g,"\\'")}','${cat}/${center}')" style="padding:5px 10px;border:1px solid #FCA5A5;border-radius:6px;font-size:12px;cursor:pointer;background:#fff;color:#DC2626;font-family:inherit;">Delete</button>
+            </div>
+          </div>
+          <div id="cm-file-edit-${f.id}" style="display:none;margin-top:10px;display:none;gap:6px;">
+            <input id="cm-fname-input-${f.id}" type="text" value="${f.name.replace(/"/g,'&quot;')}" style="flex:1;border:1.5px solid #0B1F35;border-radius:6px;padding:6px 10px;font-size:13px;font-family:inherit;outline:none;" />
+            <button onclick="cmSaveRename('${f.id}')" style="padding:6px 12px;background:#0B1F35;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;">Save</button>
+            <button onclick="cmCancelRename('${f.id}')" style="padding:6px 10px;border:1px solid #E2E8F0;border-radius:6px;font-size:12px;cursor:pointer;background:#fff;font-family:inherit;">Cancel</button>
+          </div>
+        </div>`).join('');
+    }
+
+    if (links.length) {
+      const blobStore = cat === 'regional' ? 'links-regional' : 'links-center';
+      html += `<div style="font-size:11px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.06em;margin:${files.length?'16px':0} 0 8px;">Links (${links.length})</div>`;
+      html += links.map(l => `
+        <div class="request-card" id="cm-link-${l.id}" style="margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:0;">
+              <div class="request-filename" id="cm-lname-${l.id}">${l.name}</div>
+              <a href="${l.url}" target="_blank" rel="noopener" style="font-size:11px;color:#64748B;word-break:break-all;">${l.url.length>60?l.url.slice(0,60)+'…':l.url} ↗</a>
+            </div>
+            <div style="display:flex;gap:6px;flex-shrink:0;">
+              <button onclick="cmEditLink('${l.id}','${blobStore}')" style="padding:5px 10px;border:1px solid #E2E8F0;border-radius:6px;font-size:12px;cursor:pointer;background:#fff;font-family:inherit;">Edit</button>
+              <button onclick="cmDeleteLink('${l.id}','${blobStore}','${l.name.replace(/'/g,"\\'")}','${cat}/${center}')" style="padding:5px 10px;border:1px solid #FCA5A5;border-radius:6px;font-size:12px;cursor:pointer;background:#fff;color:#DC2626;font-family:inherit;">Delete</button>
+            </div>
+          </div>
+          <div id="cm-link-edit-${l.id}" style="display:none;margin-top:10px;flex-direction:column;gap:6px;">
+            <input id="cm-lname-input-${l.id}" type="text" value="${l.name.replace(/"/g,'&quot;')}" placeholder="Name" style="border:1.5px solid #E2E8F0;border-radius:6px;padding:6px 10px;font-size:13px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='#0B1F35'" onblur="this.style.borderColor='#E2E8F0'" />
+            <input id="cm-lurl-input-${l.id}" type="url" value="${l.url.replace(/"/g,'&quot;')}" placeholder="URL" style="border:1.5px solid #E2E8F0;border-radius:6px;padding:6px 10px;font-size:13px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='#0B1F35'" onblur="this.style.borderColor='#E2E8F0'" />
+            <div style="display:flex;gap:6px;">
+              <button onclick="cmSaveLink('${l.id}','${blobStore}')" style="padding:6px 12px;background:#0B1F35;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;">Save</button>
+              <button onclick="cmCancelLink('${l.id}')" style="padding:6px 10px;border:1px solid #E2E8F0;border-radius:6px;font-size:12px;cursor:pointer;background:#fff;font-family:inherit;">Cancel</button>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    result.innerHTML = html;
+  } catch(err) {
+    result.innerHTML = `<div style="color:#DC2626;font-size:13px;">Error: ${err.message}</div>`;
+  }
+}
+
+// File actions
+function cmRenameFile(fileId) {
+  const edit = document.getElementById(`cm-file-edit-${fileId}`);
+  edit.style.display = 'flex';
+  document.getElementById(`cm-fname-input-${fileId}`).focus();
+}
+function cmCancelRename(fileId) {
+  document.getElementById(`cm-file-edit-${fileId}`).style.display = 'none';
+}
+async function cmSaveRename(fileId) {
+  const newName = document.getElementById(`cm-fname-input-${fileId}`).value.trim();
+  if (!newName) return;
+  try {
+    const r = await fetch('/.netlify/functions/admin-manage', {
+      method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'rename', type:'file', fileId, newName })
+    });
+    const d = await r.json();
+    if (d.success) {
+      document.getElementById(`cm-fname-${fileId}`).textContent = d.name || newName;
+      document.getElementById(`cm-file-edit-${fileId}`).style.display = 'none';
+    } else throw new Error(d.error);
+  } catch(err) { alert('Rename failed: ' + err.message); }
+}
+async function cmDeleteFile(fileId, name, location) {
+  if (!confirm(`Delete "${name}" from ${location}?\n\nThis cannot be undone.`)) return;
+  const card = document.getElementById(`cm-file-${fileId}`);
+  card.style.opacity = '0.5';
+  try {
+    const r = await fetch('/.netlify/functions/admin-manage', {
+      method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'delete', type:'file', fileId })
+    });
+    const d = await r.json();
+    if (d.success) card.remove();
+    else { card.style.opacity='1'; alert('Delete failed: ' + d.error); }
+  } catch(err) { card.style.opacity='1'; alert('Error: ' + err.message); }
+}
+
+// Link actions
+function cmEditLink(linkId, store) {
+  const edit = document.getElementById(`cm-link-edit-${linkId}`);
+  edit.style.display = 'flex';
+  edit.style.flexDirection = 'column';
+  document.getElementById(`cm-lname-input-${linkId}`).focus();
+}
+function cmCancelLink(linkId) {
+  document.getElementById(`cm-link-edit-${linkId}`).style.display = 'none';
+}
+async function cmSaveLink(linkId, store) {
+  const newName = document.getElementById(`cm-lname-input-${linkId}`).value.trim();
+  const newUrl  = document.getElementById(`cm-lurl-input-${linkId}`).value.trim();
+  try {
+    const r = await fetch('/.netlify/functions/admin-manage', {
+      method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'edit', type:'link', linkId, store, newName, newUrl })
+    });
+    const d = await r.json();
+    if (d.success) {
+      if (newName) document.getElementById(`cm-lname-${linkId}`).textContent = newName;
+      document.getElementById(`cm-link-edit-${linkId}`).style.display = 'none';
+    } else throw new Error(d.error);
+  } catch(err) { alert('Edit failed: ' + err.message); }
+}
+async function cmDeleteLink(linkId, store, name, location) {
+  if (!confirm(`Delete link "${name}" from ${location}?\n\nThis cannot be undone.`)) return;
+  const card = document.getElementById(`cm-link-${linkId}`);
+  card.style.opacity = '0.5';
+  try {
+    const r = await fetch('/.netlify/functions/admin-manage', {
+      method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'delete', type:'link', linkId, store })
+    });
+    const d = await r.json();
+    if (d.success) card.remove();
+    else { card.style.opacity='1'; alert('Delete failed: ' + d.error); }
+  } catch(err) { card.style.opacity='1'; alert('Error: ' + err.message); }
 }
 
 // Init
