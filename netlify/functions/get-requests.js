@@ -20,7 +20,7 @@ exports.handler = async (event) => {
   const headers = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
   const user = verifyToken(event.headers.cookie || '');
-  if (!user || user.email !== process.env.ADMIN_EMAIL) return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
+  if (!user || !process.env.ADMIN_EMAILS.split(",").map(e=>e.trim()).includes(user.email)) return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
   try {
     const listUrl = `https://api.netlify.com/api/v1/blobs/${SITE_ID}/move-requests`;
     const lr = await fetch(listUrl, { headers: { Authorization: `Bearer ${BLOBS_TOKEN}` } });
