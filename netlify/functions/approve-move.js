@@ -39,7 +39,7 @@ exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: '{}' };
   const user = verifyToken(event.headers.cookie || '');
-  if (!user || user.email !== process.env.ADMIN_EMAIL) return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
+  if (!user || !process.env.ADMIN_EMAILS.split(",").map(e=>e.trim()).includes(user.email)) return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
   try {
     const { requestId } = JSON.parse(event.body);
     const blobUrl = `https://api.netlify.com/api/v1/blobs/${SITE_ID}/move-requests/${encodeURIComponent(requestId)}`;
