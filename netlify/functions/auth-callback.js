@@ -2,7 +2,7 @@ const { createHmac } = require('crypto');
 
 const CLIENT_ID     = process.env.GOOGLE_OAUTH_CLIENT_ID;
 const CLIENT_SECRET = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
-const ADMIN_EMAIL   = process.env.ADMIN_EMAIL;
+const ADMIN_EMAILS  = process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || "";
 const JWT_SECRET    = process.env.JWT_SECRET;
 const REDIRECT_URI  = 'https://iv-florida-hub.netlify.app/.netlify/functions/auth-callback';
 const NETLIFY_TOKEN = process.env.NETLIFY_BLOBS_TOKEN; // reuse for API calls
@@ -66,7 +66,7 @@ exports.handler = async (event) => {
       headers: { Authorization: `Bearer ${tokens.access_token}` }
     });
     const user = await userResp.json();
-    if (user.email !== ADMIN_EMAIL) {
+    if (!ADMIN_EMAILS.split(",").map(e=>e.trim()).includes(user.email)) {
       return { statusCode: 302, headers: { Location: '/admin?error=unauthorized' }, body: '' };
     }
 
@@ -119,7 +119,7 @@ exports.handler = async (event) => {
     });
     const user = await userResp.json();
 
-    if (user.email !== ADMIN_EMAIL) {
+    if (!ADMIN_EMAILS.split(",").map(e=>e.trim()).includes(user.email)) {
       return { statusCode: 302, headers: { Location: '/admin?error=unauthorized' }, body: '' };
     }
 
