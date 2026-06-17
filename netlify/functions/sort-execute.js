@@ -70,7 +70,7 @@ exports.handler = async (event) => {
 
   // Require admin session
   const admin = verifyAdminToken(event.headers.cookie || '');
-  if (!admin || admin.email !== process.env.ADMIN_EMAIL) {
+  if (!admin || !process.env.ADMIN_EMAILS.split(",").map(e=>e.trim()).includes(admin.email)) {
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'Admin login required' }) };
   }
 
