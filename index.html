@@ -64,6 +64,8 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
 .content { padding: 40px; flex: 1; }
 
 /* ── HOME PAGE ── */
+.nav-icon { width:15px; height:15px; flex-shrink:0; opacity:0.5; transition:opacity 0.2s; }
+.nav-item.active .nav-icon, .nav-item:hover .nav-icon { opacity:1; }
 #page-home { display: block; }
 .home-hero { background: var(--navy); border-radius: 20px; padding: 52px 48px; margin-bottom: 32px; position: relative; overflow: hidden; }
 .home-hero::before { content: ''; position: absolute; top: -60px; right: -60px; width: 300px; height: 300px; border-radius: 50%; background: rgba(1,220,130,0.06); pointer-events: none; }
@@ -280,26 +282,33 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
   <nav class="sidebar-nav">
     <div class="nav-label">Navigation</div>
     <a class="nav-item active" data-tab="home" onclick="switchTab('home', this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       <span class="nav-code">HOM</span><span class="nav-title">Home</span>
     </a>
     <div class="nav-label" style="padding-top:8px;">Centers</div>
     <a class="nav-item" data-tab="miami" onclick="switchTab('miami', this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
       <span class="nav-code">MIA</span><span class="nav-title">Miami</span>
     </a>
     <a class="nav-item" data-tab="ftlauderdale" onclick="switchTab('ftlauderdale', this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
       <span class="nav-code">FTL</span><span class="nav-title">Ft. Lauderdale</span>
     </a>
     <a class="nav-item" data-tab="orlando" onclick="switchTab('orlando', this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
       <span class="nav-code">ORL</span><span class="nav-title">Orlando</span>
     </a>
     <a class="nav-item" data-tab="tampa" onclick="switchTab('tampa', this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
       <span class="nav-code">TPA</span><span class="nav-title">Tampa</span>
     </a>
     <a class="nav-item" data-tab="ocala" onclick="switchTab('ocala', this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
       <span class="nav-code">OCA</span><span class="nav-title">Ocala</span>
     </a>
     <div class="nav-label" style="padding-top:8px;">Shared</div>
     <a class="nav-item" data-tab="regional" onclick="switchTab('regional', this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
       <span class="nav-code">REG</span><span class="nav-title">Regional Docs</span>
     </a>
   </nav>
@@ -342,50 +351,57 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
     <div id="page-home">
       <div class="home-hero">
         <div class="home-eyebrow">Ismaili Volunteers Florida</div>
-        <h1 class="home-headline">Your regional <span>document hub</span> — organized by program and center</h1>
-        <p class="home-desc">A centralized access point for all IV Florida documents, safety protocols, educational materials, and camp records across all five centers. Click any category below to browse folders and files.</p>
+        <h1 class="home-headline">Your regional <span>document hub</span> — organized by center</h1>
+        <p class="home-desc">A centralized access point for all IV Florida documents across all five centers. Select your center to browse EOP, Safety, REC, and Camps folders.</p>
         <div class="home-stats">
-          <div><div class="home-stat-value">4</div><div class="home-stat-label">Categories</div></div>
           <div><div class="home-stat-value">5</div><div class="home-stat-label">Centers</div></div>
+          <div><div class="home-stat-value">4</div><div class="home-stat-label">Programs</div></div>
           <div><div class="home-stat-value">20</div><div class="home-stat-label">Folders</div></div>
         </div>
       </div>
 
       <div class="home-cats">
-        <div class="home-cat-card" style="--cat-color:#F59E0B;--cat-muted:rgba(245,158,11,0.10);--cat-text:#92400E;" onclick="switchTab('eop', document.querySelector('[data-tab=eop]'))">
-          <div class="home-cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-          <div class="home-cat-code">EOP</div>
-          <div class="home-cat-name">Emergency Procedures</div>
-          <div class="home-cat-desc">Emergency operating procedures and response protocols for all centers</div>
-          <div class="home-cat-action">View 5 centers <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="home-cat-card" style="--cat-color:#F59E0B;--cat-muted:rgba(245,158,11,0.10);--cat-text:#92400E;" onclick="switchTab('miami', document.querySelector('[data-tab=miami]'))">
+          <div class="home-cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+          <div class="home-cat-code">MIA</div>
+          <div class="home-cat-name">Miami</div>
+          <div class="home-cat-desc">Headquarters · Miami, FL</div>
+          <div class="home-cat-action">Browse programs <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
         </div>
-        <div class="home-cat-card" style="--cat-color:#F87171;--cat-muted:rgba(248,113,113,0.10);--cat-text:#991B1B;" onclick="switchTab('safety', document.querySelector('[data-tab=safety]'))">
-          <div class="home-cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-          <div class="home-cat-code">SAF</div>
-          <div class="home-cat-name">Safety</div>
-          <div class="home-cat-desc">Safety protocols, guidelines, and incident documentation</div>
-          <div class="home-cat-action">View 5 centers <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="home-cat-card" style="--cat-color:#F87171;--cat-muted:rgba(248,113,113,0.10);--cat-text:#991B1B;" onclick="switchTab('ftlauderdale', document.querySelector('[data-tab=ftlauderdale]'))">
+          <div class="home-cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+          <div class="home-cat-code">FTL</div>
+          <div class="home-cat-name">Ft. Lauderdale</div>
+          <div class="home-cat-desc">Coral Springs · South FL</div>
+          <div class="home-cat-action">Browse programs <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
         </div>
-        <div class="home-cat-card" style="--cat-color:#34D399;--cat-muted:rgba(52,211,153,0.10);--cat-text:#065F46;" onclick="switchTab('rec', document.querySelector('[data-tab=rec]'))">
-          <div class="home-cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
-          <div class="home-cat-code">REC</div>
-          <div class="home-cat-name">Religious Education</div>
-          <div class="home-cat-desc">Curriculum, attendance, and program materials per center</div>
-          <div class="home-cat-action">View 5 centers <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="home-cat-card" style="--cat-color:#34D399;--cat-muted:rgba(52,211,153,0.10);--cat-text:#065F46;" onclick="switchTab('orlando', document.querySelector('[data-tab=orlando]'))">
+          <div class="home-cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+          <div class="home-cat-code">ORL</div>
+          <div class="home-cat-name">Orlando</div>
+          <div class="home-cat-desc">Central FL</div>
+          <div class="home-cat-action">Browse programs <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
         </div>
-        <div class="home-cat-card" style="--cat-color:#818CF8;--cat-muted:rgba(129,140,248,0.10);--cat-text:#3730A3;" onclick="switchTab('camps', document.querySelector('[data-tab=camps]'))">
-          <div class="home-cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l4-8 4 4 3-6 4 10"/><path d="M3 17h18"/></svg></div>
-          <div class="home-cat-code">CMP</div>
-          <div class="home-cat-name">Camps</div>
-          <div class="home-cat-desc">Camp programs, event planning, and activity documentation</div>
-          <div class="home-cat-action">View 5 centers <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="home-cat-card" style="--cat-color:#818CF8;--cat-muted:rgba(129,140,248,0.10);--cat-text:#3730A3;" onclick="switchTab('tampa', document.querySelector('[data-tab=tampa]'))">
+          <div class="home-cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+          <div class="home-cat-code">TPA</div>
+          <div class="home-cat-name">Tampa</div>
+          <div class="home-cat-desc">West FL</div>
+          <div class="home-cat-action">Browse programs <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        </div>
+        <div class="home-cat-card" style="--cat-color:#22D3EE;--cat-muted:rgba(34,211,238,0.10);--cat-text:#155E75;" onclick="switchTab('ocala', document.querySelector('[data-tab=ocala]'))">
+          <div class="home-cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+          <div class="home-cat-code">OCA</div>
+          <div class="home-cat-name">Ocala</div>
+          <div class="home-cat-desc">North FL</div>
+          <div class="home-cat-action">Browse programs <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
         </div>
       </div>
 
       <div class="home-info">
         <h3>How to use this hub</h3>
-        <p>Select a category from the left sidebar or the tiles above to view all five Florida centers. Click any center card to open a document drawer — browse subfolders and files without leaving the page. All files open directly in Google Drive.</p>
-        <p>Documents are organized and maintained by the IV Florida regional team. To upload or organize new files, use the <strong>_Dump</strong> folder in Google Drive and contact your regional coordinator.</p>
+        <p>Select your center from the left sidebar or the tiles above. Each center shows four program folders — EOP, Safety, REC, and Camps. Click any program card to open a document drawer and browse files without leaving the page.</p>
+        <p>Regional Docs (shared across all centers) are accessible from the sidebar. To upload new files, use the Upload button in the top right.</p>
       </div>
     </div>
 
