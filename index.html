@@ -282,22 +282,25 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
     <a class="nav-item active" data-tab="home" onclick="switchTab('home', this)">
       <span class="nav-code">HOM</span><span class="nav-title">Home</span>
     </a>
-    <div class="nav-label" style="padding-top:8px;">Regional</div>
+    <div class="nav-label" style="padding-top:8px;">Centers</div>
+    <a class="nav-item" data-tab="miami" onclick="switchTab('miami', this)">
+      <span class="nav-code">MIA</span><span class="nav-title">Miami</span>
+    </a>
+    <a class="nav-item" data-tab="ftlauderdale" onclick="switchTab('ftlauderdale', this)">
+      <span class="nav-code">FTL</span><span class="nav-title">Ft. Lauderdale</span>
+    </a>
+    <a class="nav-item" data-tab="orlando" onclick="switchTab('orlando', this)">
+      <span class="nav-code">ORL</span><span class="nav-title">Orlando</span>
+    </a>
+    <a class="nav-item" data-tab="tampa" onclick="switchTab('tampa', this)">
+      <span class="nav-code">TPA</span><span class="nav-title">Tampa</span>
+    </a>
+    <a class="nav-item" data-tab="ocala" onclick="switchTab('ocala', this)">
+      <span class="nav-code">OCA</span><span class="nav-title">Ocala</span>
+    </a>
+    <div class="nav-label" style="padding-top:8px;">Shared</div>
     <a class="nav-item" data-tab="regional" onclick="switchTab('regional', this)">
       <span class="nav-code">REG</span><span class="nav-title">Regional Docs</span>
-    </a>
-    <div class="nav-label" style="padding-top:8px;">Categories</div>
-    <a class="nav-item" data-tab="eop" onclick="switchTab('eop', this)">
-      <span class="nav-code">EOP</span><span class="nav-title">Emergency Procedures</span><span class="nav-count">5</span>
-    </a>
-    <a class="nav-item" data-tab="safety" onclick="switchTab('safety', this)">
-      <span class="nav-code">SAF</span><span class="nav-title">Safety</span><span class="nav-count">5</span>
-    </a>
-    <a class="nav-item" data-tab="rec" onclick="switchTab('rec', this)">
-      <span class="nav-code">REC</span><span class="nav-title">Religious Education</span><span class="nav-count">5</span>
-    </a>
-    <a class="nav-item" data-tab="camps" onclick="switchTab('camps', this)">
-      <span class="nav-code">CMP</span><span class="nav-title">Camps</span><span class="nav-count">5</span>
     </a>
   </nav>
   <div class="sidebar-footer">Permissions via <a href="https://drive.google.com" target="_blank">Google Drive ↗</a></div>
@@ -386,72 +389,57 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
       </div>
     </div>
 
-    <!-- CATEGORY PAGES -->
-    <div class="category-page" id="page-eop">
+    <!-- CENTER PAGES -->
+    <div class="category-page" id="page-miami">
       <div class="cat-hero">
-        <div class="cat-hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-        <div><div class="cat-hero-code">EOP</div><div class="cat-hero-name">Emergency Operating Procedures</div><div class="cat-hero-desc">Click a center to browse documents</div></div>
-        <div class="cat-hero-pill">5 centers</div>
+        <div class="cat-hero-icon" style="background:rgba(251,191,36,0.12)"><svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <div><div class="cat-hero-code">MIA</div><div class="cat-hero-name">Miami</div><div class="cat-hero-desc">Headquarters · Miami, FL</div></div>
+        <div class="cat-hero-pill">4 programs</div>
       </div>
-      <div class="center-grid">
-        <div class="center-card" onclick="openDrawer('eop','Miami','1jVrTx0C9iEmNrNKBR9jBRIfRhlh1DyAD','Miami — EOP')"><div class="card-top"><div class="card-initial">MIA</div><div class="card-dot"></div></div><div class="card-name">Miami</div><div class="card-label">Headquarters</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openDrawer('eop','Ft. Lauderdale','1gpcSGPhQYSw2IqJJuJxIM6L5i7OaTJ45','Ft. Lauderdale — EOP')"><div class="card-top"><div class="card-initial">FTL</div><div class="card-dot"></div></div><div class="card-name">Ft. Lauderdale</div><div class="card-label">Coral Springs</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openDrawer('eop','Orlando','1MG8GQlyr1GtW0qY2naY7TRruGMGsU2cW','Orlando — EOP')"><div class="card-top"><div class="card-initial">ORL</div><div class="card-dot"></div></div><div class="card-name">Orlando</div><div class="card-label">Central FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openDrawer('eop','Tampa','1D_7igH1-S-p0bATOhG0b3ii51tZg2HRR','Tampa — EOP')"><div class="card-top"><div class="card-initial">TPA</div><div class="card-dot"></div></div><div class="card-name">Tampa</div><div class="card-label">West FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openDrawer('eop','Ocala','1vfoo5356GfC68lDdeiVffT9NNaKJ4Rry','Ocala — EOP')"><div class="card-top"><div class="card-initial">OCA</div><div class="card-dot"></div></div><div class="card-name">Ocala</div><div class="card-label">North FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-      </div>
+      <div class="center-grid" id="grid-miami"></div>
     </div>
 
-    <div class="category-page" id="page-safety">
+    <div class="category-page" id="page-ftlauderdale">
       <div class="cat-hero">
-        <div class="cat-hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-        <div><div class="cat-hero-code">SAF</div><div class="cat-hero-name">Safety</div><div class="cat-hero-desc">Click a center to browse documents</div></div>
-        <div class="cat-hero-pill">5 centers</div>
+        <div class="cat-hero-icon" style="background:rgba(248,113,113,0.12)"><svg viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <div><div class="cat-hero-code">FTL</div><div class="cat-hero-name">Ft. Lauderdale</div><div class="cat-hero-desc">Coral Springs · South FL</div></div>
+        <div class="cat-hero-pill">4 programs</div>
       </div>
-      <div class="center-grid">
-        <div class="center-card" onclick="openDrawer('safety','Miami','1ieKjGv4Fv7YrQb-8JZ9KKzMq0lh4_qIo','Miami — Safety')"><div class="card-top"><div class="card-initial">MIA</div><div class="card-dot"></div></div><div class="card-name">Miami</div><div class="card-label">Headquarters</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openDrawer('safety','Ft. Lauderdale','1X-lsQxaFEH2aUE68RJBR1pQvBk2MXYYQ','Ft. Lauderdale — Safety')"><div class="card-top"><div class="card-initial">FTL</div><div class="card-dot"></div></div><div class="card-name">Ft. Lauderdale</div><div class="card-label">Coral Springs</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openDrawer('safety','Orlando','1XI0LnP0U0yEk9NzD7OL3O9Sp67j4EgCa','Orlando — Safety')"><div class="card-top"><div class="card-initial">ORL</div><div class="card-dot"></div></div><div class="card-name">Orlando</div><div class="card-label">Central FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openDrawer('safety','Tampa','1NzXaNqpBs1N1BSytd4zv1hOARG9RImHf','Tampa — Safety')"><div class="card-top"><div class="card-initial">TPA</div><div class="card-dot"></div></div><div class="card-name">Tampa</div><div class="card-label">West FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openDrawer('safety','Ocala','11Dc0bJC6A3nF2QWYg-wg5j2DMnMk8KrI','Ocala — Safety')"><div class="card-top"><div class="card-initial">OCA</div><div class="card-dot"></div></div><div class="card-name">Ocala</div><div class="card-label">North FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-      </div>
+      <div class="center-grid" id="grid-ftlauderdale"></div>
     </div>
 
-    <div class="category-page" id="page-rec">
+    <div class="category-page" id="page-orlando">
       <div class="cat-hero">
-        <div class="cat-hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
-        <div><div class="cat-hero-code">REC</div><div class="cat-hero-name">Religious Education Center</div><div class="cat-hero-desc">Click a center to browse documents</div></div>
-        <div class="cat-hero-pill">5 centers</div>
+        <div class="cat-hero-icon" style="background:rgba(52,211,153,0.12)"><svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <div><div class="cat-hero-code">ORL</div><div class="cat-hero-name">Orlando</div><div class="cat-hero-desc">Central FL</div></div>
+        <div class="cat-hero-pill">4 programs</div>
       </div>
-      <div class="center-grid">
-        <div class="center-card" onclick="openDrawer('rec','Miami','10YqSvPui8lxfE31E4TpViKOqvliwmJ8G','Miami — REC')"><div class="card-top"><div class="card-initial">MIA</div><div class="card-dot"></div></div><div class="card-name">Miami</div><div class="card-label">Headquarters</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openDrawer('rec','Ft. Lauderdale','1c89iBn9Vse3h3HxgT9nuD6i3MonNfJ3v','Ft. Lauderdale — REC')"><div class="card-top"><div class="card-initial">FTL</div><div class="card-dot"></div></div><div class="card-name">Ft. Lauderdale</div><div class="card-label">Coral Springs</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openDrawer('rec','Orlando','1Z0DYQkYsPXUYOS--o-BAiAcFN2qgT2cA','Orlando — REC')"><div class="card-top"><div class="card-initial">ORL</div><div class="card-dot"></div></div><div class="card-name">Orlando</div><div class="card-label">Central FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openDrawer('rec','Tampa','1h6ra4O_LpF5bWgI6Xbo7M0S9MVk97yvB','Tampa — REC')"><div class="card-top"><div class="card-initial">TPA</div><div class="card-dot"></div></div><div class="card-name">Tampa</div><div class="card-label">West FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openDrawer('rec','Ocala','1ASR89ZA-mEfm1ayYRtqWV4Z1SeQTYyAh','Ocala — REC')"><div class="card-top"><div class="card-initial">OCA</div><div class="card-dot"></div></div><div class="card-name">Ocala</div><div class="card-label">North FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-      </div>
+      <div class="center-grid" id="grid-orlando"></div>
     </div>
 
-    <div class="category-page" id="page-camps">
+    <div class="category-page" id="page-tampa">
       <div class="cat-hero">
-        <div class="cat-hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l4-8 4 4 3-6 4 10"/><path d="M3 17h18"/></svg></div>
-        <div><div class="cat-hero-code">CMP</div><div class="cat-hero-name">Camps</div><div class="cat-hero-desc">Click a center to browse documents</div></div>
-        <div class="cat-hero-pill">5 centers</div>
+        <div class="cat-hero-icon" style="background:rgba(129,140,248,0.12)"><svg viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <div><div class="cat-hero-code">TPA</div><div class="cat-hero-name">Tampa</div><div class="cat-hero-desc">West FL</div></div>
+        <div class="cat-hero-pill">4 programs</div>
       </div>
-      <div class="center-grid">
-        <div class="center-card" onclick="openDrawer('camps','Miami','17xUbiAyEXkH00P7Lf1O9bU4Fjsk3deGF','Miami — Camps')"><div class="card-top"><div class="card-initial">MIA</div><div class="card-dot"></div></div><div class="card-name">Miami</div><div class="card-label">Headquarters</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openDrawer('camps','Ft. Lauderdale','1qKYp_IeAarga1SiZou1Rg16PofdEi4Cf','Ft. Lauderdale — Camps')"><div class="card-top"><div class="card-initial">FTL</div><div class="card-dot"></div></div><div class="card-name">Ft. Lauderdale</div><div class="card-label">Coral Springs</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openDrawer('camps','Orlando','13epUEqPvVp0bmi98rX3znJMhLtAM8dVM','Orlando — Camps')"><div class="card-top"><div class="card-initial">ORL</div><div class="card-dot"></div></div><div class="card-name">Orlando</div><div class="card-label">Central FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openDrawer('camps','Tampa','1fKo-XKZGpcIUbSI2XkOj5CIlPKxCEKkY','Tampa — Camps')"><div class="card-top"><div class="card-initial">TPA</div><div class="card-dot"></div></div><div class="card-name">Tampa</div><div class="card-label">West FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
-        <div class="center-card" onclick="openDrawer('camps','Ocala','12QeCkZtXbBzdSOTjBWoeyerVSF9tWDa8','Ocala — Camps')"><div class="card-top"><div class="card-initial">OCA</div><div class="card-dot"></div></div><div class="card-name">Ocala</div><div class="card-label">North FL</div><div class="card-action">Browse files <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></div>
+      <div class="center-grid" id="grid-tampa"></div>
+    </div>
+
+    <div class="category-page" id="page-ocala">
+      <div class="cat-hero">
+        <div class="cat-hero-icon" style="background:rgba(34,211,238,0.12)"><svg viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <div><div class="cat-hero-code">OCA</div><div class="cat-hero-name">Ocala</div><div class="cat-hero-desc">North FL</div></div>
+        <div class="cat-hero-pill">4 programs</div>
       </div>
+      <div class="center-grid" id="grid-ocala"></div>
     </div>
 
     <!-- REGIONAL DOCS PAGE -->
     <div class="category-page" id="page-regional">
       <div class="cat-hero">
         <div class="cat-hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
-        <div><div class="cat-hero-code">REG</div><div class="cat-hero-name">Regional Docs</div><div class="cat-hero-desc">Resources that apply across all centers and verticals</div></div>
+        <div><div class="cat-hero-code">REG</div><div class="cat-hero-name">Regional Docs</div><div class="cat-hero-desc">Resources shared across all centers and programs</div></div>
         <div class="cat-hero-pill" id="regional-pill">Loading…</div>
       </div>
       <div class="center-grid" id="regional-grid">
@@ -624,15 +612,41 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); min-heigh
 
 <script>
 const TABS = {
-  home:     { bg:'#F5F3EF', accent:'#01DC82', muted:'rgba(1,220,130,0.10)', badgeText:'#0B5E38', initial:'#EDF4F0', stripe:'#01DC82', title:'Welcome', meta:'IV Florida Regional Document Hub', badge:'HOME' },
-  regional: { bg:'#ECFEFF', accent:'#22D3EE', muted:'rgba(34,211,238,0.10)', badgeText:'#155E75', initial:'#CFFAFE', stripe:'#22D3EE', title:'Regional Docs', meta:'Resources across all centers and verticals', badge:'REG' },
-  eop:      { bg:'#FFFBEB', accent:'#F59E0B', muted:'rgba(245,158,11,0.10)', badgeText:'#92400E', initial:'#FEF9EC', stripe:'#F59E0B', title:'Emergency Operating Procedures', meta:'Select a center to browse documents', badge:'EOP' },
-  safety:   { bg:'#FFF5F5', accent:'#F87171', muted:'rgba(248,113,113,0.10)', badgeText:'#991B1B', initial:'#FFF0F0', stripe:'#F87171', title:'Safety', meta:'Select a center to browse documents', badge:'SAF' },
-  rec:      { bg:'#F0FDF9', accent:'#34D399', muted:'rgba(52,211,153,0.10)', badgeText:'#065F46', initial:'#ECFDF5', stripe:'#34D399', title:'Religious Education Center', meta:'Select a center to browse documents', badge:'REC' },
-  camps:    { bg:'#F5F3FF', accent:'#818CF8', muted:'rgba(129,140,248,0.10)', badgeText:'#3730A3', initial:'#EEF2FF', stripe:'#818CF8', title:'Camps', meta:'Select a center to browse documents', badge:'CMP' }
+  home:         { bg:'#F5F3EF', accent:'#01DC82', muted:'rgba(1,220,130,0.10)',     badgeText:'#0B5E38', initial:'#EDF4F0', stripe:'#01DC82', title:'Welcome',         meta:'IV Florida Regional Document Hub',    badge:'HOME' },
+  miami:        { bg:'#FFFBEB', accent:'#F59E0B', muted:'rgba(245,158,11,0.10)',    badgeText:'#92400E', initial:'#FEF9EC', stripe:'#F59E0B', title:'Miami',           meta:'Headquarters · Miami, FL',            badge:'MIA'  },
+  ftlauderdale: { bg:'#FFF5F5', accent:'#F87171', muted:'rgba(248,113,113,0.10)',   badgeText:'#991B1B', initial:'#FFF0F0', stripe:'#F87171', title:'Ft. Lauderdale', meta:'Coral Springs · South FL',            badge:'FTL'  },
+  orlando:      { bg:'#F0FDF9', accent:'#34D399', muted:'rgba(52,211,153,0.10)',    badgeText:'#065F46', initial:'#ECFDF5', stripe:'#34D399', title:'Orlando',         meta:'Central FL',                          badge:'ORL'  },
+  tampa:        { bg:'#F5F3FF', accent:'#818CF8', muted:'rgba(129,140,248,0.10)',   badgeText:'#3730A3', initial:'#EEF2FF', stripe:'#818CF8', title:'Tampa',           meta:'West FL',                             badge:'TPA'  },
+  ocala:        { bg:'#ECFEFF', accent:'#22D3EE', muted:'rgba(34,211,238,0.10)',    badgeText:'#155E75', initial:'#CFFAFE', stripe:'#22D3EE', title:'Ocala',           meta:'North FL',                            badge:'OCA'  },
+  regional:     { bg:'#F5F3EF', accent:'#01DC82', muted:'rgba(1,220,130,0.10)',     badgeText:'#0B5E38', initial:'#EDF4F0', stripe:'#01DC82', title:'Regional Docs',   meta:'Shared across all centers',           badge:'REG'  },
 };
 
 let currentTab = 'home';
+
+const CENTER_PROGRAMS = {
+  miami:        { label:'Miami',         key:'Miami',        abbr:'MIA' },
+  ftlauderdale: { label:'Ft. Lauderdale',key:'FtLauderdale', abbr:'FTL' },
+  orlando:      { label:'Orlando',       key:'Orlando',      abbr:'ORL' },
+  tampa:        { label:'Tampa',         key:'Tampa',        abbr:'TPA' },
+  ocala:        { label:'Ocala',         key:'Ocala',        abbr:'OCA' },
+};
+
+const PROGRAMS = [
+  { id:'eop',    label:'EOP',    desc:'Emergency Operating Procedures', color:'#F59E0B',
+    folders:{ Miami:'1jVrTx0C9iEmNrNKBR9jBRIfRhlh1DyAD', FtLauderdale:'1gpcSGPhQYSw2IqJJuJxIM6L5i7OaTJ45', Orlando:'1MG8GQlyr1GtW0qY2naY7TRruGMGsU2cW', Tampa:'1D_7igH1-S-p0bATOhG0b3ii51tZg2HRR', Ocala:'1vfoo5356GfC68lDdeiVffT9NNaKJ4Rry' },
+    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>` },
+  { id:'safety', label:'Safety', desc:'Safety & Security',              color:'#F87171',
+    folders:{ Miami:'1ieKjGv4Fv7YrQb-8JZ9KKzMq0lh4_qIo', FtLauderdale:'1X-lsQxaFEH2aUE68RJBR1pQvBk2MXYYQ', Orlando:'1XI0LnP0U0yEk9NzD7OL3O9Sp67j4EgCa', Tampa:'1NzXaNqpBs1N1BSytd4zv1hOARG9RImHf', Ocala:'11Dc0bJC6A3nF2QWYg-wg5j2DMnMk8KrI' },
+    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>` },
+  { id:'rec',    label:'REC',    desc:'Religious Education Center',     color:'#34D399',
+    folders:{ Miami:'10YqSvPui8lxfE31E4TpViKOqvliwmJ8G', FtLauderdale:'1c89iBn9Vse3h3HxgT9nuD6i3MonNfJ3v', Orlando:'1Z0DYQkYsPXUYOS--o-BAiAcFN2qgT2cA', Tampa:'1h6ra4O_LpF5bWgI6Xbo7M0S9MVk97yvB', Ocala:'1ASR89ZA-mEfm1ayYRtqWV4Z1SeQTYyAh' },
+    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>` },
+  { id:'camps',  label:'Camps',  desc:'Camps & Youth Programs',         color:'#818CF8',
+    folders:{ Miami:'17xUbiAyEXkH00P7Lf1O9bU4Fjsk3deGF', FtLauderdale:'1qKYp_IeAarga1SiZou1Rg16PofdEi4Cf', Orlando:'13epUEqPvVp0bmi98rX3znJMhLtAM8dVM', Tampa:'1fKo-XKZGpcIUbSI2XkOj5CIlPKxCEKkY', Ocala:'12QeCkZtXbBzdSOTjBWoeyerVSF9tWDa8' },
+    icon:`<svg viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l4-8 4 4 3-6 4 10"/><path d="M3 17h18"/></svg>` },
+];
+
+const _loadedCenterPages = new Set();
 
 function switchTab(tab, el) {
   if (currentTab === tab) { closeSidebar(); return; }
@@ -654,7 +668,31 @@ function switchTab(tab, el) {
   document.getElementById('topbar-meta').textContent = t.meta;
   document.getElementById('topbar-badge').textContent = t.badge;
   if (tab === 'regional') loadRegionalSections();
+  else if (CENTER_PROGRAMS[tab] && !_loadedCenterPages.has(tab)) {
+    loadCenterPage(tab);
+    _loadedCenterPages.add(tab);
+  }
   closeSidebar();
+}
+
+function loadCenterPage(centerTab) {
+  const center = CENTER_PROGRAMS[centerTab];
+  if (!center) return;
+  const grid = document.getElementById('grid-' + centerTab);
+  if (!grid) return;
+  const arrowSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+  grid.innerHTML = PROGRAMS.map(prog => {
+    const folderId = prog.folders[center.key];
+    return `<div class="center-card" onclick="openDrawer('${prog.id}','${center.label}','${folderId}','${center.label} — ${prog.label}')">
+      <div class="card-top">
+        <div class="card-initial" style="background:${prog.color}22;display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;">${prog.icon}</div>
+        <div class="card-dot"></div>
+      </div>
+      <div class="card-name">${prog.label}</div>
+      <div class="card-label">${prog.desc}</div>
+      <div class="card-action">Browse files ${arrowSvg}</div>
+    </div>`;
+  }).join('');
 }
 
 // ── Drawer ──
